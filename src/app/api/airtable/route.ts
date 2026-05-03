@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BASE_ID = 'appnF2fNAyEYnscvo'
-const LEADS_TABLE = 'tblMgthKziXfnIPBV'
-const LOG_TABLE = 'tbl6olAfEJ479I9oq'
+const BASE_ID = 'appCYgmFc8vTfwyv1'
+const LEADS_TABLE = 'tblAsQXKEK9chUaT6'
+const LOG_TABLE = 'tbli5CIBIqRXIkRqe'
 
 const AT_KEY = process.env.AIRTABLE_API_KEY!
 

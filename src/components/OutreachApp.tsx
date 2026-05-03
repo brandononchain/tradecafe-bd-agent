@@ -654,7 +654,7 @@ export default function App(){
       addLog(`Writing sequence for ${lead.company}...`,'i')
       try{
         const r=await fetch('/api/generate',{method:'POST',headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({lead,senderName:'The Lobstack Team',mode:'all'})}).then(r=>r.json())
+          body:JSON.stringify({lead,senderName:'Brandon @ TradeCafe',mode:'all'})}).then(r=>r.json())
         if(!r.ok)throw new Error(r.error)
         // Save cold email + both follow-ups in one Airtable update
         await fetch('/api/airtable',{method:'POST',headers:{'Content-Type':'application/json'},
@@ -699,7 +699,7 @@ export default function App(){
         const r=await fetch('/api/regenerate',{
           method:'POST',
           headers:{'Content-Type':'application/json'},
-          body:JSON.stringify({recordIds:batch.map(l=>l.id),senderName:'Brandon @ Lobstack'})
+          body:JSON.stringify({recordIds:batch.map(l=>l.id),senderName:'Brandon @ TradeCafe'})
         }).then(r=>r.json())
         if(r.ok){
           done+=r.results.filter((x:any)=>x.ok).length
@@ -889,8 +889,8 @@ export default function App(){
               <polygon points="18,8 32,16 32,20 18,28 4,20 4,16" fill="#D63839" opacity="0.75"/>
               <polygon points="18,14 32,22 32,26 18,34 4,26 4,22" fill="#E84142" opacity="1.0"/>
             </svg>
-            <div className="brand-name">Lobstack</div>
-            <div className="brand-tag">Outreach</div>
+            <div className="brand-name">TradeCafe</div>
+            <div className="brand-tag">BD Agent</div>
           </div>
           <div className="topbar-r">
             <button className="btn btn-ghost btn-xs" onClick={checkHealth} disabled={hl}>{hl?'…':'↻ Refresh'}</button>
@@ -1094,7 +1094,7 @@ export default function App(){
                     <div className="pipe-lbl">{lbl}</div>
                     <div className={`pipe-val ${done?'done':val>0?'on':''}`}>{val}</div>
                     <div className="pipe-sub">{sub}</div>
-                    <button className="pipe-cta" onClick={()=>t==='crm'?window.open('https://airtable.com/appnF2fNAyEYnscvo','_blank'):setTab(t)}>{cta}</button>
+                    <button className="pipe-cta" onClick={()=>t==='crm'?window.open('https://airtable.com/appCYgmFc8vTfwyv1','_blank'):setTab(t)}>{cta}</button>
                     <div className="pipe-bar" style={{width:`${pct}%`}}/>
                     {done&&<div className="pipe-check on">✓</div>}
                   </div>
@@ -1116,7 +1116,7 @@ export default function App(){
                     {ico:'✦',lbl:'Generate Emails',act:()=>setTab('generate'),dis:!health?.env?.anthropic},
                     {ico:'▶',lbl:'Send Campaign',act:()=>setTab('send'),dis:readyCnt===0,prime:readyCnt>0},
                     {ico:'◈',lbl:'View CRM',act:()=>setTab('crm'),dis:false},
-                    {ico:'↗',lbl:'Open Airtable',act:()=>window.open('https://airtable.com/appnF2fNAyEYnscvo','_blank'),dis:false},
+                    {ico:'↗',lbl:'Open Airtable',act:()=>window.open('https://airtable.com/appCYgmFc8vTfwyv1','_blank'),dis:false},
                   ].map(({ico,lbl,act,dis,prime}:any)=>(
                     <button key={lbl}
                       onClick={act} disabled={dis}
@@ -1619,7 +1619,7 @@ export default function App(){
                 <div className="btn-row" style={{marginLeft:'auto'}}>
                   <button className="btn btn-ghost btn-sm" onClick={()=>loadLeads()}>↻</button>
                   {sel.size>0&&<button className="btn btn-ghost btn-sm" onClick={()=>setSel(new Set())}>Clear {sel.size}</button>}
-                  <button className="btn btn-ghost btn-sm" onClick={()=>window.open('https://airtable.com/appnF2fNAyEYnscvo','_blank')}>↗ Airtable</button>
+                  <button className="btn btn-ghost btn-sm" onClick={()=>window.open('https://airtable.com/appCYgmFc8vTfwyv1','_blank')}>↗ Airtable</button>
                   <button className="btn btn-ghost btn-sm" onClick={()=>{
                     const f=crmFilter!=='all'?`?filter=${crmFilter}`:''
                     window.open(`/api/export${f}`,'_blank')
@@ -1850,7 +1850,7 @@ export default function App(){
                             toast(`${detailLead.company} re-qualified`,'o')
                           }}>↩ Re-qualify</button>
                         )}
-                        <a href={`https://airtable.com/appnF2fNAyEYnscvo/tblMgthKziXfnIPBV/${detailLead.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm" style={{textDecoration:'none'}}>↗ Airtable</a>
+                        <a href={`https://airtable.com/appCYgmFc8vTfwyv1/tblAsQXKEK9chUaT6/${detailLead.id}`} target="_blank" rel="noopener noreferrer" className="btn btn-ghost btn-sm" style={{textDecoration:'none'}}>↗ Airtable</a>
                       </div>
 
                     </div>
@@ -1901,7 +1901,7 @@ export default function App(){
               <span className="alert-icon">💡</span>
               <div className="alert-body">
                 <div className="alert-title">Add contact emails to unlock campaign sending</div>
-                Open Airtable → Lobstack Leads → fill the Contact Email column. Target CTOs, VPs Engineering, founders. Use <strong>Hunter.io</strong>, <strong>Apollo.io</strong>, or <strong>LinkedIn Sales Navigator</strong>.
+                Open Airtable → TradeCafe BD Leads → fill the Contact Email column. Target CTOs, VPs Engineering, founders. Use <strong>Hunter.io</strong>, <strong>Apollo.io</strong>, or <strong>LinkedIn Sales Navigator</strong>.
               </div>
             </div>
           </>}
@@ -1911,7 +1911,7 @@ export default function App(){
           {tab==='generate'&&<>
             <div className="ph">
               <div className="ph-t">Email Generation</div>
-              <div className="ph-s">Claude writes personalised cold emails per lead using GitHub profile and Lobstack value prop — saved directly to Airtable</div>
+              <div className="ph-s">Claude writes personalised cold emails per lead using GitHub profile and TradeCafe value prop — saved directly to Airtable</div>
             </div>
             <div className="card">
               <div className="card-hd">
@@ -2399,7 +2399,7 @@ export default function App(){
                           />
                           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:12}}>
                             <div style={{fontFamily:'var(--mono)',fontSize:10,color:'var(--ink4)'}}>
-                              Sends from brandon@lobstack.ai · saved to Sent folder
+                              Sends from brandon@tradecafe.ai · saved to Sent folder
                             </div>
                             <div style={{display:'flex',gap:8}}>
                               {active.replyIntent==='unsubscribe'&&(

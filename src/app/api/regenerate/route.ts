@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BASE  = 'appnF2fNAyEYnscvo'
-const TABLE = 'tblMgthKziXfnIPBV'
+const BASE  = 'appCYgmFc8vTfwyv1'
+const TABLE = 'tblAsQXKEK9chUaT6'
 const AT    = () => process.env.AIRTABLE_API_KEY!
 
 // ── Inline Claude caller (avoids internal HTTP fetch which breaks on Vercel) ──
@@ -45,31 +45,32 @@ async function callClaude(prompt: string, maxTokens = 600): Promise<any> {
 }
 
 function buildColdPrompt(lead: any, senderName: string): string {
-  return `Write a cold outreach email FROM Lobstack (lobstack.ai) TO a decision maker at ${lead.company}.
+  return `Write a cold outreach email FROM TradeCafe (tradecafe.ai) TO a decision maker at ${lead.company}.
 
-ABOUT LOBSTACK: Subscription platform that deploys autonomous AI agents on isolated VMs with persistent memory and 100+ integrations in under 90 seconds. Zero DevOps. Built for teams shipping AI to production.
+ABOUT TRADECAFE: AI-assisted trading platform with a partner revenue share network. AI generates trade signals with built-in risk management. Partners earn recurring revenue share (10-25%) when their referral network trades. Performance-based, compounding income.
 
 ABOUT THE RECIPIENT:
 Company: ${lead.company} (${lead.companyType})
-What they build: ${lead.description || lead.notes || 'AI/ML tooling'}
-Top repos: ${lead.topRepos || lead.githubOrgUrl || 'N/A'}
+What they do: ${lead.description || lead.notes || 'Crypto/trading/DeFi'}
+Top repos/projects: ${lead.topRepos || lead.githubOrgUrl || 'N/A'}
 GitHub: ${lead.githubStars ? `${lead.githubStars.toLocaleString()} stars` : ''} ${lead.orgMembers ? `· ${lead.orgMembers} org members` : ''}
 Contact: ${lead.contactName ? `${lead.contactName}${lead.jobTitle ? ` (${lead.jobTitle})` : ''}` : 'decision maker'}
 
 EMAIL STRUCTURE:
-- Subject: 4-7 words, specific to their actual work, no question marks
-- Opening: one sharp observation about what they build, cite a real repo or product name
-- 2-3 sentences on the problem: production agent deployment crushes teams with VM setup, memory that resets, wiring integrations from scratch. Be specific to their stack.
-- 1 sentence on Lobstack
+- Subject: 4-7 words, specific to their actual work or niche, no question marks
+- Opening: one sharp observation about what they build or their content
+- 2-3 sentences on the opportunity: most partnership deals are flat fee with no recurring value. TradeCafe's model is performance-based revenue share that compounds monthly.
+- 1 sentence on TradeCafe
 - Primary CTA: "Worth a 15-minute call?" or a specific variation tied to their work
-- Optional quiet secondary: "Or poke around at lobstack.ai" only if natural
+- Optional quiet secondary: "Or check the PNL proof at tradecafe.ai" only if natural
 - Sign off: ${senderName}
+  brandon@tradecafe.ai
 
 Return JSON: {"subject":"...","body":"..."}`
 }
 
 function buildFU1Prompt(lead: any, coldSubject: string, senderName: string): string {
-  return `Write follow-up email #1 for Lobstack outreach to ${lead.company}. Sent 5 days after the cold email, no reply.
+  return `Write follow-up email #1 for TradeCafe outreach to ${lead.company}. Sent 5 days after the cold email, no reply.
 
 Original subject: "${coldSubject}"
 Company: ${lead.company} — ${lead.description || lead.notes || 'AI tooling'}
@@ -86,7 +87,7 @@ Return JSON: {"subject":"Re: ${coldSubject}","body":"..."}`
 }
 
 function buildFU2Prompt(lead: any, coldSubject: string, senderName: string): string {
-  return `Write the final breakup email for Lobstack outreach to ${lead.company}. Two emails sent, no reply.
+  return `Write the final breakup email for TradeCafe outreach to ${lead.company}. Two emails sent, no reply.
 
 Original subject: "${coldSubject}"
 Company: ${lead.company} — ${lead.description || lead.notes || 'AI tooling'}
@@ -102,7 +103,7 @@ Return JSON: {"subject":"Re: ${coldSubject}","body":"..."}`
 
 // ── Main handler ──────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
-  const { recordIds, senderName = 'Brandon @ Lobstack' } = await req.json()
+  const { recordIds, senderName = 'Brandon @ TradeCafe' } = await req.json()
 
   // Load leads from Airtable
   let leads: any[] = []

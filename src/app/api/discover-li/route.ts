@@ -96,7 +96,7 @@ export async function GET(req: NextRequest) {
     const crmNames = new Set<string>()
     try {
       const at = await fetch(
-        `https://api.airtable.com/v0/appnF2fNAyEYnscvo/tblMgthKziXfnIPBV?pageSize=200&fields[]=Company`,
+        `https://api.airtable.com/v0/appCYgmFc8vTfwyv1/tblAsQXKEK9chUaT6?pageSize=200&fields[]=Company`,
         { headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}` } }
       ).then(r => r.json())
       for (const rec of at.records || []) {

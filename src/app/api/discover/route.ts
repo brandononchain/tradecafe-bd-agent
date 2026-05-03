@@ -21,7 +21,7 @@ async function ghSearch(query: string, token?: string): Promise<any[]> {
   const url = `https://api.github.com/search/repositories?q=${query}&sort=stars&order=desc&per_page=30`
   const headers: Record<string, string> = {
     'Accept': 'application/vnd.github.v3+json',
-    'User-Agent': 'LobstackOutreach/1.0',
+    'User-Agent': 'TradeCafeBDAgent/1.0',
   }
   if (token) headers['Authorization'] = `token ${token}`
   try {

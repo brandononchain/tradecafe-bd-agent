@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 import { ImapFlow } from 'imapflow'
 
-const BASE  = 'appnF2fNAyEYnscvo'
-const TABLE = 'tblMgthKziXfnIPBV'
+const BASE  = 'appCYgmFc8vTfwyv1'
+const TABLE = 'tblAsQXKEK9chUaT6'
 const AT    = () => process.env.AIRTABLE_API_KEY!
 
 function validateEmail(email: string): { valid: boolean; reason?: string; warning?: string } {
@@ -20,13 +20,13 @@ function validateEmail(email: string): { valid: boolean; reason?: string; warnin
 
 async function appendToSent(user: string, pass: string, raw: string) {
   const client = new ImapFlow({
-    host: 'mail.privateemail.com', port: 993, secure: true,
+    host: 'imap.gmail.com', port: 993, secure: true,
     auth: { user, pass }, logger: false,
     tls: { rejectUnauthorized: false },
   })
   try {
     await client.connect()
-    await client.append('Sent', raw, ['\\Seen'])
+    await client.append('[Gmail]/Sent Mail', raw, ['\\Seen'])
     await client.logout()
   } catch (e: any) {
     console.error('IMAP append error:', e.message)
@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
 
   const pass = smtpPass || process.env.SMTP_PASSWORD
   const from = fromEmail || process.env.SMTP_EMAIL
-  const name = fromName  || process.env.SMTP_NAME || 'Brandon @ Lobstack'
+  const name = fromName  || process.env.SMTP_NAME || 'Brandon @ TradeCafe'
 
   if (!pass || !from)        return NextResponse.json({ ok: false, error: 'SMTP not configured' }, { status: 400 })
   if (!to || !subject || !body) return NextResponse.json({ ok: false, error: 'Missing to, subject, or body' }, { status: 400 })
@@ -73,7 +73,7 @@ export async function POST(req: NextRequest) {
   // Build tracking pixel URL (only if we have a recordId)
   const appUrl    = process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : 'https://email-outreach-rosy.vercel.app'
+    : 'https://tradecafe-bd.vercel.app'
   const pixelHtml = recordId
     ? `<img src="${appUrl}/api/track/${recordId}" width="1" height="1" style="display:none" alt="" />`
     : ''
@@ -85,7 +85,7 @@ ${body.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>').replace(/^/,'<p>').repla
 </p>${pixelHtml}</div>`
 
   const transporter = nodemailer.createTransport({
-    host: 'mail.privateemail.com', port: 587, secure: false,
+    host: 'smtp.gmail.com', port: 587, secure: false,
     auth: { user: from, pass },
     tls: { rejectUnauthorized: false },
     connectionTimeout: 15000, greetingTimeout: 10000, socketTimeout: 15000,

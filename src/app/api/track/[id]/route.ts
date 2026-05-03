@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BASE  = 'appnF2fNAyEYnscvo'
-const TABLE = 'tblMgthKziXfnIPBV'
+const BASE  = 'appCYgmFc8vTfwyv1'
+const TABLE = 'tblAsQXKEK9chUaT6'
 const AT    = () => process.env.AIRTABLE_API_KEY!
 
 // 1×1 transparent GIF

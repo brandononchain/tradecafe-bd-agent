@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
   }
 
   const transporter = nodemailer.createTransport({
-    host: 'mail.privateemail.com',
+    host: 'smtp.gmail.com',
     port: 587,
     secure: false,
     auth: { user: email, pass: password },
@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   try {
     await transporter.verify()
     transporter.close()
-    return NextResponse.json({ ok: true, message: 'SMTP auth verified — PrivateEmail connected' })
+    return NextResponse.json({ ok: true, message: 'SMTP auth verified — Gmail connected for tradecafe.ai' })
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e.message }, { status: 400 })
   }

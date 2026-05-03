@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server'
 import nodemailer from 'nodemailer'
 
-const BASE_ID = 'appnF2fNAyEYnscvo'
-const LEADS_TABLE = 'tblMgthKziXfnIPBV'
-const LOG_TABLE = 'tbl6olAfEJ479I9oq'
+const BASE_ID = 'appCYgmFc8vTfwyv1'
+const LEADS_TABLE = 'tblAsQXKEK9chUaT6'
+const LOG_TABLE = 'tbli5CIBIqRXIkRqe'
 
 export async function GET() {
   const results: Record<string, any> = {}
@@ -77,7 +77,7 @@ export async function GET() {
   if (process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD) {
     try {
       const t = nodemailer.createTransport({
-        host: 'mail.privateemail.com', port: 587, secure: false,
+        host: 'imap.gmail.com', port: 587, secure: false,
         auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_PASSWORD },
         tls: { rejectUnauthorized: false },
         connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 8000,

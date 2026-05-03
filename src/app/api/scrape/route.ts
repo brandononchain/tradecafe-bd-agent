@@ -5,7 +5,7 @@ const GITHUB_API = 'https://api.github.com'
 async function ghFetch(path: string, token?: string) {
   const headers: Record<string, string> = {
     'Accept': 'application/vnd.github+json',
-    'User-Agent': 'LobstackOutreach/1.0',
+    'User-Agent': 'TradeCafeBDAgent/1.0',
   }
   if (token) headers['Authorization'] = `Bearer ${token}`
   const res = await fetch(`${GITHUB_API}${path}`, { headers, next: { revalidate: 3600 } })

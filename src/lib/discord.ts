@@ -55,7 +55,7 @@ function buildEmbed(payload: NotifyPayload) {
         title,
         color:  payload.repliesFound > 0 ? 0x16a34a : hasActivity ? 0xe84142 : 0x6b7280,
         fields,
-        footer: { text: `Lobstack Outreach · ${now} CT` },
+        footer: { text: `TradeCafe BD Agent · ${now} CT` },
       }],
     }
   }
@@ -83,7 +83,7 @@ function buildEmbed(payload: NotifyPayload) {
         title:  `✅ Reply sent to ${payload.company}`,
         color:  0x16a34a,
         fields: [{ name: 'To', value: payload.email, inline: true }],
-        footer: { text: `Lobstack Outreach · ${now} CT` },
+        footer: { text: `TradeCafe BD Agent · ${now} CT` },
       }],
     }
   }
@@ -97,7 +97,7 @@ function buildEmbed(payload: NotifyPayload) {
           { name: 'Emails sent', value: String(payload.totalSent),  inline: true },
           { name: 'Total leads', value: String(payload.totalLeads), inline: true },
         ],
-        footer: { text: `Lobstack Outreach · ${now} CT` },
+        footer: { text: `TradeCafe BD Agent · ${now} CT` },
       }],
     }
   }

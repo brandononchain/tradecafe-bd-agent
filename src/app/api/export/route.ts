@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BASE  = 'appnF2fNAyEYnscvo'
-const TABLE = 'tblMgthKziXfnIPBV'
+const BASE  = 'appCYgmFc8vTfwyv1'
+const TABLE = 'tblAsQXKEK9chUaT6'
 const AT    = () => process.env.AIRTABLE_API_KEY!
 
 // Professional CSV escaping
@@ -126,11 +126,11 @@ export async function GET(req: NextRequest) {
 
     const today    = new Date().toISOString().split('T')[0]
     const label    = filter === 'all' ? 'all-leads' : filter
-    const filename = `lobstack-outreach-${label}-${today}.csv`
+    const filename = `tradecafe-bd-agent-${label}-${today}.csv`
 
     // Professional header: metadata comment rows (ignored by Excel/Sheets, useful for humans)
     const meta = [
-      `# Lobstack Outreach Export`,
+      `# TradeCafe BD Agent Export`,
       `# Generated: ${new Date().toLocaleString('en-US', {dateStyle:'long',timeStyle:'short'})}`,
       `# Filter: ${filter} · Total records: ${records.length}`,
       `# `,

@@ -3,9 +3,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ImapFlow } from 'imapflow'
 
-const BASE  = 'appnF2fNAyEYnscvo'
-const LEADS = `https://api.airtable.com/v0/${BASE}/tblMgthKziXfnIPBV`
-const LOG   = `https://api.airtable.com/v0/${BASE}/tbl6olAfEJ479I9oq`
+const BASE  = 'appCYgmFc8vTfwyv1'
+const LEADS = `https://api.airtable.com/v0/${BASE}/tblAsQXKEK9chUaT6`
+const LOG   = `https://api.airtable.com/v0/${BASE}/tbli5CIBIqRXIkRqe`
 const AT    = () => process.env.AIRTABLE_API_KEY!
 
 const NDR_SENDERS  = /mailer-daemon|postmaster|mail-delivery|delivery.status|bounce/i
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
     const inbox: { fromAddr: string; fromDomain: string; subject: string; text: string; seq: number }[] = []
 
     const client = new ImapFlow({
-      host: 'mail.privateemail.com', port: 993, secure: true,
+      host: 'imap.gmail.com', port: 993, secure: true,
       auth: { user: host, pass }, logger: false, tls: { rejectUnauthorized: false },
     })
 

@@ -3,19 +3,19 @@ import nodemailer from 'nodemailer'
 import { ImapFlow } from 'imapflow'
 import { sendDiscordNotification } from '@/lib/discord'
 
-const BASE  = 'appnF2fNAyEYnscvo'
-const TABLE = 'tblMgthKziXfnIPBV'
+const BASE  = 'appCYgmFc8vTfwyv1'
+const TABLE = 'tblAsQXKEK9chUaT6'
 const AT    = () => process.env.AIRTABLE_API_KEY!
 
 async function appendToSent(user: string, pass: string, raw: string) {
   const client = new ImapFlow({
-    host: 'mail.privateemail.com', port: 993, secure: true,
+    host: 'imap.gmail.com', port: 993, secure: true,
     auth: { user, pass }, logger: false,
     tls: { rejectUnauthorized: false },
   })
   try {
     await client.connect()
-    await client.append('Sent', raw, ['\\Seen'])
+    await client.append('[Gmail]/Sent Mail', raw, ['\\Seen'])
     await client.logout()
   } catch (e: any) {
     console.error('IMAP append error:', e.message)
@@ -40,7 +40,7 @@ ${body.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>').replace(/^/,'<p>').repla
 </div>`
 
   const transporter = nodemailer.createTransport({
-    host: 'mail.privateemail.com', port: 587, secure: false,
+    host: 'smtp.gmail.com', port: 587, secure: false,
     auth: { user: from, pass },
     tls: { rejectUnauthorized: false },
     connectionTimeout: 15000, socketTimeout: 15000,
@@ -49,7 +49,7 @@ ${body.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>').replace(/^/,'<p>').repla
   try {
     await transporter.verify()
     const info = await transporter.sendMail({
-      from:    `Brandon @ Lobstack <${from}>`,
+      from:    `Brandon @ TradeCafe <${from}>`,
       to,
       subject: replySubject,
       text:    body,
@@ -59,7 +59,7 @@ ${body.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>').replace(/^/,'<p>').repla
 
     // Save to Sent folder
     const rawMsg = [
-      `From: Brandon @ Lobstack <${from}>`,
+      `From: Brandon @ TradeCafe <${from}>`,
       `To: ${to}`,
       `Subject: ${replySubject}`,
       `Date: ${new Date().toUTCString()}`,

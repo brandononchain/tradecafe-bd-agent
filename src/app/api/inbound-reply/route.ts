@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const BASE  = 'appnF2fNAyEYnscvo'
-const LEADS = 'tblMgthKziXfnIPBV'
+const BASE  = 'appCYgmFc8vTfwyv1'
+const LEADS = 'tblAsQXKEK9chUaT6'
 const AT    = () => process.env.AIRTABLE_API_KEY!
 
 // Classify what kind of reply this is
@@ -125,7 +125,7 @@ export async function POST(req: NextRequest) {
     await updateLeadReply(lead.id, classification.intent, classification.summary, classification.suggestedResponse)
 
     // Log to Campaign Log
-    await fetch(`https://api.airtable.com/v0/${BASE}/tbl6olAfEJ479I9oq`, {
+    await fetch(`https://api.airtable.com/v0/${BASE}/tbli5CIBIqRXIkRqe`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${AT()}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -158,5 +158,5 @@ export async function POST(req: NextRequest) {
 
 // Also accept GET for webhook verification (SendGrid does this)
 export async function GET(req: NextRequest) {
-  return NextResponse.json({ ok: true, endpoint: 'Lobstack inbound reply handler' })
+  return NextResponse.json({ ok: true, endpoint: 'TradeCafe inbound reply handler' })
 }

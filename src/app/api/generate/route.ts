@@ -18,33 +18,36 @@ TONE: A peer technical founder writing to another technical founder. Warm, direc
 Respond ONLY with valid JSON. No markdown fences. No explanation.`
 
 function buildColdEmailPrompt(lead: any, senderName: string): string {
-  return `Write a cold outreach email FROM Lobstack (lobstack.ai) TO a decision maker at ${lead.company}.
+  return `Write a cold outreach email FROM TradeCafe (tradecafe.ai) TO a decision maker at ${lead.company}.
 
-ABOUT LOBSTACK:
-Lobstack is a subscription platform that deploys autonomous AI agents on isolated VMs with persistent memory and 100+ integrations in under 90 seconds. Zero DevOps required. Built for teams shipping AI to production. Pricing is subscription-based.
+ABOUT TRADECAFE:
+TradeCafe is an AI-assisted trading platform with a partner revenue share network. The AI generates trade signals with built-in risk management (entry, targets, stop loss, confidence score). Partners earn recurring revenue share when their referral network trades. Tier system: Bronze 10%, Silver 15%, Gold 20%, Platinum 25%+. Not a flat fee sponsorship. Performance-based, compounding, recurring income.
+
+Partner referral link: https://tradecafe.ai/join/6a6b1e01-7e53-4a25-8912-8f7bb089dec1
 
 ABOUT THE RECIPIENT:
 Company: ${lead.company} (${lead.companyType})
-What they build: ${lead.description || lead.notes || 'AI/ML tooling'}
-Top repos: ${lead.topRepos || lead.githubOrgUrl || 'N/A'}
-AI tools: ${lead.aiTools || 'AI/ML stack'}
+What they do: ${lead.description || lead.notes || 'Crypto/trading/DeFi'}
+Top repos/projects: ${lead.topRepos || lead.githubOrgUrl || 'N/A'}
+Tech/niche: ${lead.aiTools || 'Crypto/trading'}
 GitHub: ${lead.githubStars ? `${lead.githubStars.toLocaleString()} stars` : ''} ${lead.orgMembers ? `· ${lead.orgMembers} org members` : ''}
 Contact: ${lead.contactName ? `${lead.contactName}${lead.jobTitle ? ` (${lead.jobTitle})` : ''}` : 'decision maker'}
 
 EMAIL STRUCTURE:
-- Subject: 4-7 words, specific to their actual work, no question marks
-- Opening sentence: one sharp observation about what they build (cite a real repo name or product)
-- 2-3 sentences on the problem: teams building agents in production get crushed by VM setup, memory that resets between sessions, and wiring up integrations from scratch. Be specific to their stack.
-- 1 sentence on Lobstack: what it actually does, not marketing words
-- CTA (primary): "Worth a 15-minute call?" or a specific variation tied to their work
-- CTA (secondary, optional): "Or take it for a spin at lobstack.ai" — only include if it feels natural, keep it brief
-- Sign off: ${senderName} @ lobstack.ai
+- Subject: 4-7 words, specific to their actual work or niche, no question marks
+- Opening sentence: one sharp observation about what they build or their content (cite a real repo, product, or post if available)
+- 2-3 sentences on the opportunity: most partnership deals are flat fee with no recurring value. TradeCafe's partner model is performance-based revenue share that compounds. Their audience trades, they earn. Monthly. Recurring.
+- 1 sentence on TradeCafe: AI trading signals with built-in risk management, not another shill deal
+- CTA (primary): "Worth a 15-minute call this week?" or a specific variation tied to their work
+- CTA (secondary, optional): "Or check the PNL proof at tradecafe.ai" only if natural
+- Sign off: ${senderName}
+  brandon@tradecafe.ai
 
 Return JSON: {"subject":"...","body":"..."}`
 }
 
 function buildFollowUp1Prompt(lead: any, coldSubject: string, senderName: string): string {
-  return `Write follow-up email #1 for Lobstack outreach to ${lead.company}. Sent 5 days after the cold email, no reply received.
+  return `Write follow-up email #1 for TradeCafe outreach to ${lead.company}. Sent 5 days after the cold email, no reply received.
 
 Original subject: "${coldSubject}"
 Company: ${lead.company} — ${lead.description || lead.notes || 'AI tooling'}
@@ -62,7 +65,7 @@ Return JSON: {"subject":"Re: ${coldSubject}","body":"..."}`
 }
 
 function buildFollowUp2Prompt(lead: any, coldSubject: string, senderName: string): string {
-  return `Write the final breakup email for Lobstack outreach to ${lead.company}. Two emails sent, no reply.
+  return `Write the final breakup email for TradeCafe outreach to ${lead.company}. Two emails sent, no reply.
 
 Original subject: "${coldSubject}"
 Company: ${lead.company} — ${lead.description || lead.notes || 'AI tooling'}
@@ -79,7 +82,7 @@ Return JSON: {"subject":"Re: ${coldSubject}","body":"..."}`
 
 // ── API handler ───────────────────────────────────────────────────────────────
 export async function POST(req: NextRequest) {
-  const { lead, senderName = 'Brandon @ Lobstack', mode = 'all' } = await req.json()
+  const { lead, senderName = 'Brandon @ TradeCafe', mode = 'all' } = await req.json()
 
   const callClaude = async (prompt: string, maxTokens = 600) => {
     const res = await fetch('https://api.anthropic.com/v1/messages', {

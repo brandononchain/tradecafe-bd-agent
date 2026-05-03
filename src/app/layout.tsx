@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 export const metadata: Metadata = {
-  title: 'Lobstack Outreach',
-  description: 'B2B Cold Email System — Lobstack.ai',
+  title: 'TradeCafe BD Agent',
+  description: 'B2B Cold Email System — tradecafe.ai',
   icons: {
     icon: [
       { url: '/favicon.svg', type: 'image/svg+xml' },

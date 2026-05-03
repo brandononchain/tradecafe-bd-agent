@@ -3,9 +3,9 @@ import nodemailer from 'nodemailer'
 import { ImapFlow } from 'imapflow'
 import { sendDiscordNotification } from '@/lib/discord'
 
-const BASE  = 'appnF2fNAyEYnscvo'
-const LEADS = `https://api.airtable.com/v0/${BASE}/tblMgthKziXfnIPBV`
-const LOG   = `https://api.airtable.com/v0/${BASE}/tbl6olAfEJ479I9oq`
+const BASE  = 'appCYgmFc8vTfwyv1'
+const LEADS = `https://api.airtable.com/v0/${BASE}/tblAsQXKEK9chUaT6`
+const LOG   = `https://api.airtable.com/v0/${BASE}/tbli5CIBIqRXIkRqe`
 const AT    = () => process.env.AIRTABLE_API_KEY!
 
 const FU1_DAYS = 5
@@ -24,14 +24,14 @@ async function sendEmail(to: string, subject: string, body: string, recordId?: s
   const pass   = process.env.SMTP_PASSWORD!
   const appUrl = process.env.VERCEL_PROJECT_PRODUCTION_URL
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : 'https://email-outreach-rosy.vercel.app'
+    : 'https://tradecafe-bd.vercel.app'
   const pixel  = recordId
     ? `<img src="${appUrl}/api/track/${recordId}" width="1" height="1" style="display:none" alt=""/>`
     : ''
-  const t = nodemailer.createTransport({ host: 'mail.privateemail.com', port: 587, secure: false, auth: { user: from, pass }, tls: { rejectUnauthorized: false }, connectionTimeout: 15000, socketTimeout: 15000 })
+  const t = nodemailer.createTransport({ host: 'smtp.gmail.com', port: 587, secure: false, auth: { user: from, pass }, tls: { rejectUnauthorized: false }, connectionTimeout: 15000, socketTimeout: 15000 })
   await t.verify()
   const info = await t.sendMail({
-    from: `Brandon @ Lobstack <${from}>`, replyTo: `Brandon @ Lobstack <${from}>`, to, subject,
+    from: `Brandon @ TradeCafe <${from}>`, replyTo: `Brandon @ TradeCafe <${from}>`, to, subject,
     text: body + '\n\n---\nTo unsubscribe reply with "unsubscribe".',
     html: `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.6;max-width:600px">
       ${body.replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>').replace(/^/,'<p>').replace(/$/,'</p>')}
@@ -83,7 +83,7 @@ async function checkInboxForReplies(
   }
 
   const client = new ImapFlow({
-    host: 'mail.privateemail.com', port: 993, secure: true,
+    host: 'imap.gmail.com', port: 993, secure: true,
     auth: { user: host, pass }, logger: false,
     tls: { rejectUnauthorized: false },
   })
