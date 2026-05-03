@@ -86,14 +86,15 @@ export async function sendReply(opts: {
   originalMessageId: string
   threadId: string
 }): Promise<{ ok: boolean; messageId?: string; error?: string }> {
+  const msgId = await getOriginalMessageId(opts.originalMessageId)
   return sendEmail({
     ...opts,
-    replyToMessageId: originalMessageId(opts.originalMessageId),
+    replyToMessageId: msgId,
   })
 }
 
 // Get actual Message-ID header from Gmail message ID
-async function originalMessageId(gmailMsgId: string): Promise<string> {
+async function getOriginalMessageId(gmailMsgId: string): Promise<string> {
   try {
     const gmail = getGmail()
     const msg = await gmail.users.messages.get({
