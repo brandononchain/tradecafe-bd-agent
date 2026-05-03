@@ -110,34 +110,32 @@ const CSS=`
 @import url('https://fonts.googleapis.com/css2?family=Geist:wght@100..900&family=Inter:wght@100..900&family=JetBrains+Mono:wght@100..800&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#f4f4f4;--s1:#fff;--s2:#f7f7f7;--s3:#efefef;
-  --b:#e8e8e8;--b2:#d4d4d4;
-  --ink:#111;--ink2:#444;--ink3:#888;--ink4:#bbb;
-  --dark:#0f1115;--dark2:#1c2029;
-  --red:#E84142;--red2:#D63839;--red3:#CE7878;
-  --grad:linear-gradient(135deg,#E84142 0%,#D63839 50%,#CE7878 100%);
-  --green:#16a34a;--yellow:#d97706;
-  --sans:'Geist',sans-serif;--body:'Inter',sans-serif;--mono:'JetBrains Mono',monospace;
-  --r:8px;--r2:12px;
-  --sh:0 1px 3px rgba(0,0,0,.07),0 1px 2px rgba(0,0,0,.04);
-  --sh2:0 4px 16px rgba(0,0,0,.08),0 2px 6px rgba(0,0,0,.04);
+  --bg:#0a0a0f;--s1:#111118;--s2:#16161e;--s3:#1c1c26;
+  --b:rgba(255,255,255,0.06);--b2:rgba(255,255,255,0.1);
+  --ink:#e2e4e9;--ink2:#a0a4b0;--ink3:#6b7080;--dark:#0a0a0f;
+  --green:#4ECDC4;--yellow:#FFB800;
+  --red:#FF6B6B;--red2:#4ECDC4;--red3:#CC3333;
+  --grad:linear-gradient(135deg,#4ECDC4 0%,#00E5A0 50%,#7B61FF 100%);
+  --sh:0 1px 3px rgba(0,0,0,0.4);
+  --r1:6px;--r2:10px;
+  --sans:'Inter',system-ui,sans-serif;--mono:'JetBrains Mono','SF Mono',monospace;--body:'Inter',system-ui,sans-serif;
 }
 body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased}
-::selection{background:#E8414220}
+::selection{background:#4ECDC420}
 .shell{display:flex;flex-direction:column;min-height:100vh}
 
 /* TOPBAR */
 .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 32px;height:54px;background:var(--s1);border-bottom:1px solid var(--b);position:sticky;top:0;z-index:100;box-shadow:var(--sh)}
 .brand{display:flex;align-items:center;gap:10px}
 .brand-name{font-family:var(--sans);font-weight:700;font-size:16px;letter-spacing:-.4px}
-.brand-tag{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border-radius:4px;background:var(--dark);color:#fff;font-weight:500}
+.brand-tag{font-family:var(--mono);font-size:9px;letter-spacing:1.5px;text-transform:uppercase;padding:2px 8px;border-radius:4px;background:#4ECDC4;color:#0a0a0f;font-weight:600}
 .topbar-r{display:flex;align-items:center;gap:14px}
 .chip{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:10px;color:var(--ink3);padding:4px 10px;border-radius:20px;border:1px solid var(--b);background:var(--s2);transition:all .2s}
-.chip.ok{border-color:#16a34a30;background:#16a34a06;color:#166534}
-.chip.err{border-color:#E8414230;background:#E8414206;color:#7f1d1e}
+.chip.ok{border-color:#4ECDC430;background:#4ECDC410;color:#4ECDC4}
+.chip.err{border-color:#FF6B6B30;background:#FF6B6B10;color:#FF6B6B}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--b2);flex-shrink:0;transition:all .3s}
 .dot.ok{background:var(--green)}
-.dot.err{background:var(--red)}
+.dot.err{background:#4ECDC4;color:#0a0a0f}
 .dot.spin{background:var(--yellow);animation:pdot 1s infinite}
 @keyframes pdot{0%,100%{opacity:1}50%{opacity:.3}}
 
@@ -145,9 +143,9 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:13p
 .nav{display:flex;background:var(--s1);border-bottom:1px solid var(--b);padding:0 32px;overflow-x:auto}
 .nb{display:flex;align-items:center;gap:7px;padding:0 18px;height:42px;font-family:var(--mono);font-size:10px;color:var(--ink3);cursor:pointer;background:none;border:none;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;text-transform:uppercase;letter-spacing:1px}
 .nb:hover{color:var(--ink)}
-.nb.active{color:var(--ink);border-bottom-color:var(--red)}
+.nb.active{color:#4ECDC4;border-bottom-color:#4ECDC4}
 .nn{font-size:9px;border-radius:4px;padding:1px 5px;min-width:16px;text-align:center;font-weight:600;background:var(--dark);color:#fff}
-.nn.warn{background:var(--red)}
+.nn.warn{background:#4ECDC4;color:#0a0a0f}
 
 /* STATS STRIP */
 .strip{background:var(--s1);border-bottom:1px solid var(--b)}
@@ -156,7 +154,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:13p
 .scell:last-child{border-right:none}
 .sval{font-family:var(--sans);font-size:22px;font-weight:800;letter-spacing:-.5px;line-height:1;color:var(--ink4)}
 .sval.on{color:var(--ink)}
-.sval.live{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sval.live{background:linear-gradient(135deg,#4ECDC4,#00E5A0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .slbl{font-family:var(--mono);font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.8px;margin-top:3px}
 .sico{font-size:18px;opacity:.12}
 
@@ -170,22 +168,22 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:13p
 .card{background:var(--s1);border:1px solid var(--b);border-radius:var(--r2);padding:24px;margin-bottom:16px;box-shadow:var(--sh)}
 .card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap}
 .ct{font-family:var(--mono);font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1.5px;color:var(--ink3);display:flex;align-items:center;gap:8px}
-.ct::before{content:'';width:3px;height:12px;background:var(--grad);border-radius:2px;display:block;flex-shrink:0}
+.ct::before{content:'';width:3px;height:12px;background:linear-gradient(135deg,#4ECDC4,#00E5A0);border-radius:2px;display:block;flex-shrink:0}
 
 /* HEALTH GRID */
 .hgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px}
 .hcard{border-radius:var(--r2);padding:20px;background:var(--s1);border:1.5px solid var(--b);box-shadow:var(--sh);position:relative;overflow:hidden;transition:box-shadow .2s}
 .hcard:hover{box-shadow:var(--sh2)}
 .hbar{position:absolute;top:0;left:0;right:0;height:3px;background:var(--b)}
-.hbar.ok{background:var(--grad)}
-.hbar.err{background:var(--red)}
+.hbar.ok{background:linear-gradient(135deg,#4ECDC4,#00E5A0)}
+.hbar.err{background:#4ECDC4;color:#0a0a0f}
 .hbar.spin{background:linear-gradient(90deg,var(--b) 0%,var(--yellow) 50%,var(--b) 100%);background-size:200%;animation:bspin 1.4s infinite}
 @keyframes bspin{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .hcard-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .hico{width:34px;height:34px;border-radius:8px;background:var(--s3);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
 .hbadge{font-family:var(--mono);font-size:9px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;padding:3px 8px;border-radius:4px}
 .hbadge.ok{background:#16a34a12;color:var(--green)}
-.hbadge.err{background:#E8414212;color:var(--red)}
+.hbadge.err{background:#4ECDC412;color:var(--red)}
 .hbadge.spin{background:#d9770612;color:var(--yellow)}
 .hbadge.unknown{background:var(--s3);color:var(--ink3)}
 .hname{font-family:var(--sans);font-size:14px;font-weight:700;margin-bottom:4px}
@@ -193,7 +191,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:13p
 .htags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid var(--b)}
 .htag{font-family:var(--mono);font-size:9px;padding:2px 7px;border-radius:4px;background:var(--s3);color:var(--ink3)}
 .htag.g{background:#16a34a10;color:var(--green)}
-.htag.r{background:#E8414210;color:var(--red)}
+.htag.r{background:#4ECDC410;color:var(--red)}
 .htag.y{background:#d9770610;color:var(--yellow)}
 
 /* PIPELINE */
@@ -205,12 +203,12 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:13p
 .pipe-lbl{font-family:var(--sans);font-size:12px;font-weight:600;color:var(--ink2);margin-bottom:10px}
 .pipe-val{font-family:var(--sans);font-size:36px;font-weight:800;letter-spacing:-1.5px;line-height:1;color:var(--ink4)}
 .pipe-val.on{color:var(--ink)}
-.pipe-val.done{background:var(--grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.pipe-val.done{background:linear-gradient(135deg,#4ECDC4,#00E5A0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
 .pipe-sub{font-size:11px;color:var(--ink3);margin-top:6px}
 .pipe-cta{display:inline-flex;align-items:center;gap:4px;margin-top:14px;font-family:var(--mono);font-size:10px;color:var(--red2);cursor:pointer;background:none;border:none;padding:0;letter-spacing:.3px}
 .pipe-cta:hover{text-decoration:underline}
-.pipe-bar{position:absolute;bottom:0;left:0;height:2px;background:var(--grad);transition:width .6s ease}
-.pipe-check{position:absolute;top:20px;right:20px;width:20px;height:20px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;opacity:0;transition:opacity .3s}
+.pipe-bar{position:absolute;bottom:0;left:0;height:2px;background:linear-gradient(135deg,#4ECDC4,#00E5A0);transition:width .6s ease}
+.pipe-check{position:absolute;top:20px;right:20px;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#4ECDC4,#00E5A0);display:flex;align-items:center;justify-content:center;font-size:9px;color:#fff;opacity:0;transition:opacity .3s}
 .pipe-check.on{opacity:1}
 
 /* ACTIONS */
@@ -246,7 +244,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:13p
 .field{margin-bottom:16px}
 .field label{display:block;font-family:var(--mono);font-size:10px;color:var(--ink3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;font-weight:600}
 .field input,.field select{width:100%;background:var(--bg);border:1.5px solid var(--b2);border-radius:var(--r);padding:9px 12px;color:var(--ink);font-family:var(--mono);font-size:12px;outline:none;transition:border-color .15s,box-shadow .15s}
-.field input:focus,.field select:focus{border-color:var(--red2);box-shadow:0 0 0 3px #E8414210}
+.field input:focus,.field select:focus{border-color:var(--red2);box-shadow:0 0 0 3px #4ECDC410}
 .field input::placeholder{color:var(--ink4)}
 .g2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .s2{grid-column:1/-1}
@@ -256,7 +254,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:13p
 .btn:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
 .btn-dark{background:var(--dark);color:#fff}
 .btn-dark:hover{background:var(--dark2);transform:translateY(-1px);box-shadow:0 4px 14px rgba(15,17,21,.25)}
-.btn-red{background:var(--grad);color:#fff}
+.btn-red{background:linear-gradient(135deg,#4ECDC4,#00E5A0);color:#fff}
 .btn-red:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 4px 14px rgba(232,65,66,.3)}
 .btn-ghost{background:transparent;border:1.5px solid var(--b2);color:var(--ink2)}
 .btn-ghost:hover{border-color:var(--ink3);color:var(--ink)}
@@ -269,16 +267,16 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:13p
 .alert-icon{flex-shrink:0}
 .alert-body{flex:1}
 .alert-title{font-weight:600;margin-bottom:2px;font-family:var(--sans);font-size:12px}
-.ai{background:#E8414206;border-color:#E8414225;color:#7f1d1e}
+.ai{background:#4ECDC406;border-color:#4ECDC425;color:#7f1d1e}
 .ao{background:#16a34a06;border-color:#16a34a25;color:#14532d}
 .aw{background:#d9770606;border-color:#d9770625;color:#78350f}
-.ae{background:#E8414210;border-color:#E8414235;color:#7f1d1e}
+.ae{background:#4ECDC410;border-color:#4ECDC435;color:#7f1d1e}
 
 /* PROVIDER */
 .pt{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
 .po{padding:16px;border-radius:var(--r);cursor:pointer;border:1.5px solid var(--b2);background:var(--s2);transition:all .15s}
 .po:hover{border-color:var(--ink3)}
-.po.a{border-color:var(--red2);background:#E8414204}
+.po.a{border-color:var(--red2);background:#4ECDC404}
 .pon{font-family:var(--sans);font-weight:700;font-size:13px;margin-bottom:3px}
 .po.a .pon{color:var(--red2)}
 .pos{font-size:11px;color:var(--ink3)}
@@ -289,7 +287,7 @@ body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:13p
 .scard:hover{border-color:var(--ink3);box-shadow:var(--sh2)}
 .scard.done{border-color:var(--green);background:#16a34a04}
 .scard.running{border-color:var(--yellow);animation:scpulse .9s infinite}
-.scard.fail{border-color:var(--red);background:#E8414204}
+.scard.fail{border-color:var(--red);background:#4ECDC404}
 @keyframes scpulse{0%,100%{border-color:var(--yellow)}50%{border-color:#d9770650}}
 .sn{font-family:var(--sans);font-weight:700;font-size:13px;margin-bottom:2px}
 .stype{font-family:var(--mono);font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.5px}
@@ -304,7 +302,7 @@ thead th{padding:10px 14px;text-align:left;font-family:var(--mono);font-size:9px
 tbody td{padding:12px 14px;border-bottom:1px solid var(--b);vertical-align:middle;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 tbody tr:last-child td{border-bottom:none}
 tbody tr:hover td{background:var(--s2)}
-tbody tr.sel td{background:#E8414206}
+tbody tr.sel td{background:#4ECDC406}
 .ck{width:14px;height:14px;accent-color:var(--red2);cursor:pointer}
 
 /* PILLS */
@@ -312,13 +310,13 @@ tbody tr.sel td{background:#E8414206}
 .pn{background:var(--s3);color:var(--ink3);border-color:var(--b2)}
 .ps{background:#d9770610;color:#92400e;border-color:#d9770630}
 .pr{background:#16a34a10;color:#166534;border-color:#16a34a30}
-.pb2{background:#E8414210;color:#7f1d1e;border-color:#E8414230}
+.pb2{background:#4ECDC410;color:#7f1d1e;border-color:#4ECDC430}
 
 /* PROGRESS */
 .pgwrap{margin:12px 0}
 .pglbl{display:flex;justify-content:space-between;font-family:var(--mono);font-size:10px;color:var(--ink3);margin-bottom:6px}
 .pgbar{height:3px;background:var(--b);border-radius:2px;overflow:hidden}
-.pgfill{height:100%;background:var(--grad);transition:width .4s ease;border-radius:2px}
+.pgfill{height:100%;background:linear-gradient(135deg,#4ECDC4,#00E5A0);transition:width .4s ease;border-radius:2px}
 
 /* EMAIL */
 .ep{background:var(--bg);border:1.5px solid var(--b);border-radius:var(--r);padding:20px;font-size:13px;line-height:1.75;white-space:pre-wrap;max-height:280px;overflow-y:auto;font-family:var(--body)}
@@ -365,7 +363,7 @@ hr{border:none;border-top:1px solid var(--b);margin:20px 0}
 .bcell{background:var(--s1);border:1px solid var(--b);border-radius:var(--r2);padding:20px;box-shadow:var(--sh);transition:box-shadow .15s}
 .bcell:hover{box-shadow:var(--sh2)}
 .bcell-dark{background:var(--dark);border-color:var(--b)}
-.bcell-accent{background:linear-gradient(135deg,#E8414208 0%,#E8414202 100%);border-color:#E8414220}
+.bcell-accent{background:linear-gradient(135deg,#4ECDC408 0%,#4ECDC402 100%);border-color:#4ECDC420}
 .muted{color:var(--ink3)}
 code{background:var(--dark);color:#e2e8f0;padding:2px 7px;border-radius:4px;font-size:11px;font-family:var(--mono)}
 .flex{display:flex}.gap8{gap:8px}.gap12{gap:12px}
@@ -477,8 +475,8 @@ export default function App(){
       if(r.airtable?.ok)addLog(`✓ Airtable — ${r.airtable.leadsCount} leads`,'o')
       else addLog(`✗ Airtable: ${r.airtable?.error||'not configured'}`,'e')
       if(r.github?.ok)addLog(`✓ GitHub — ${r.github.remaining}/${r.github.limit} req/hr`,'o')
-      if(r.smtp?.ok)addLog(`✓ PrivateEmail — ${r.smtp.email}`,'o')
-      else if(r.env?.smtpEmail)addLog('✗ SMTP auth failed','e')
+      if(r.gmail?.ok)addLog(`✓ PrivateEmail — ${r.gmail.email}`,'o')
+      else if(r.env?.gmailEmail)addLog('✗ Gmail API auth failed','e')
       if(r.anthropic?.ok)addLog('✓ Anthropic API ready','o')
     }catch(e:any){addLog(`✗ Health: ${e.message}`,'e')}
     setHL(false)
@@ -885,9 +883,9 @@ export default function App(){
         <div className="topbar">
           <div className="brand">
             <svg width="22" height="22" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" style={{flexShrink:0}}>
-              <polygon points="18,2 32,10 32,14 18,22 4,14 4,10" fill="#CE7878" opacity="0.55"/>
-              <polygon points="18,8 32,16 32,20 18,28 4,20 4,16" fill="#D63839" opacity="0.75"/>
-              <polygon points="18,14 32,22 32,26 18,34 4,26 4,22" fill="#E84142" opacity="1.0"/>
+              <polygon points="18,2 32,10 32,14 18,22 4,14 4,10" fill="#7B61FF" opacity="0.55"/>
+              <polygon points="18,8 32,16 32,20 18,28 4,20 4,16" fill="#00E5A0" opacity="0.75"/>
+              <polygon points="18,14 32,22 32,26 18,34 4,26 4,22" fill="#4ECDC4" opacity="1.0"/>
             </svg>
             <div className="brand-name">TradeCafe</div>
             <div className="brand-tag">BD Agent</div>
@@ -973,7 +971,7 @@ export default function App(){
 
                   {/* Today's Queue — wide bento cell */}
                   <div className="bcell bcell-accent" style={{padding:0,overflow:'hidden'}}>
-                    <div style={{padding:'20px 24px',borderBottom:'1px solid #E8414218'}}>
+                    <div style={{padding:'20px 24px',borderBottom:'1px solid #4ECDC418'}}>
                       <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:16}}>
                         <div>
                           <div style={{fontFamily:'var(--mono)',fontSize:9,color:'var(--ink4)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:4}}>Today's Queue</div>
@@ -988,7 +986,7 @@ export default function App(){
                       </div>
                       {/* Warmup progress bar */}
                       <div style={{height:6,background:'var(--b2)',borderRadius:3,overflow:'hidden',marginBottom:12}}>
-                        <div className="bar-grow" style={{height:'100%',width:`${budgetPct}%`,background:budget===0?'#E84142':'#16a34a',borderRadius:3}}/>
+                        <div className="bar-grow" style={{height:'100%',width:`${budgetPct}%`,background:budget===0?'#4ECDC4':'#16a34a',borderRadius:3}}/>
                       </div>
                     </div>
                     {/* 4-stat grid */}
@@ -1001,8 +999,8 @@ export default function App(){
                       ].map(({lbl,val,sub,col,act},i,arr)=>(
                         <div key={lbl}
                           onClick={act||undefined}
-                          style={{padding:'16px 20px',borderRight:i<arr.length-1?'1px solid #E8414210':'none',cursor:act?'pointer':'default',transition:'background .1s'}}
-                          onMouseEnter={act?e=>(e.currentTarget.style.background='#E8414208'):undefined}
+                          style={{padding:'16px 20px',borderRight:i<arr.length-1?'1px solid #4ECDC410':'none',cursor:act?'pointer':'default',transition:'background .1s'}}
+                          onMouseEnter={act?e=>(e.currentTarget.style.background='#4ECDC408'):undefined}
                           onMouseLeave={act?e=>(e.currentTarget.style.background=''):undefined}>
                           <div style={{fontFamily:'var(--sans)',fontWeight:800,fontSize:28,letterSpacing:'-1.5px',color:val>0?col:'var(--ink4)',lineHeight:1}}>{val}</div>
                           <div style={{fontFamily:'var(--mono)',fontSize:9,color:'var(--ink3)',textTransform:'uppercase',letterSpacing:'.8px',marginTop:5}}>{lbl}</div>
@@ -1012,7 +1010,7 @@ export default function App(){
                     </div>
                     {/* Footer bar */}
                     {(needsEmail>0||needsContact>0)&&(
-                      <div style={{padding:'10px 24px',borderTop:'1px solid #E8414218',display:'flex',gap:20,flexWrap:'wrap',background:'#E8414205'}}>
+                      <div style={{padding:'10px 24px',borderTop:'1px solid #4ECDC418',display:'flex',gap:20,flexWrap:'wrap',background:'#4ECDC405'}}>
                         {needsEmail>0&&<span onClick={()=>setTab('generate')} style={{fontFamily:'var(--mono)',fontSize:10,color:'var(--yellow)',cursor:'pointer'}}><strong>{needsEmail}</strong> need email written</span>}
                         {leads.filter(l=>l.bounced).length>0&&<span onClick={()=>{setTab('crm');setCrmFilter('bounced')}} style={{fontFamily:'var(--mono)',fontSize:10,color:'var(--red)',cursor:'pointer'}}><strong>{leads.filter(l=>l.bounced).length}</strong> bounced</span>}
                         {stats.replied>0&&<span onClick={()=>setTab('inbox')} style={{fontFamily:'var(--mono)',fontSize:10,color:'var(--green)',cursor:'pointer'}}><strong>{stats.replied}</strong> repl{stats.replied===1?'y':'ies'}</span>}
@@ -1030,7 +1028,7 @@ export default function App(){
                       {[10,20,35,50,75,100].map((lim,i)=>(
                         <div key={i} style={{
                           padding:'8px 6px',borderRadius:'var(--r)',textAlign:'center',
-                          background:i+1<weekNum?'#16a34a18':i+1===weekNum?'#E8414215':'var(--s2)',
+                          background:i+1<weekNum?'#16a34a18':i+1===weekNum?'#4ECDC415':'var(--s2)',
                           border:`1px solid ${i+1<weekNum?'#16a34a30':i+1===weekNum?'var(--red2)':'var(--b)'}`,
                         }}>
                           <div style={{fontFamily:'var(--mono)',fontSize:11,fontWeight:700,color:i+1<weekNum?'var(--green)':i+1===weekNum?'var(--red2)':'var(--ink4)'}}>{lim}</div>
@@ -1053,9 +1051,9 @@ export default function App(){
                 {key:'airtable',ico:'🗄',name:'Airtable',
                   detail:health?.airtable?.ok?`${health.airtable.leadsCount} leads`:health?.airtable?.error||'Not connected',
                   ok:health?.airtable?.ok, h:health?.airtable},
-                {key:'smtp',ico:'✉',name:'SMTP',
-                  detail:health?.smtp?.ok?health.smtp.email:health?.env?.smtpEmail?'Auth failed':'Not configured',
-                  ok:health?.smtp?.ok, h:health?.smtp},
+                {key:'gmail',ico:'✉',name:'Gmail API',
+                  detail:health?.gmail?.ok?health.gmail.email:health?.env?.gmailEmail?'Auth failed':'Not configured',
+                  ok:health?.gmail?.ok, h:health?.gmail},
                 {key:'github',ico:'⑂',name:'GitHub API',
                   detail:health?.github?.ok?`${health.github.remaining} req/hr left`:'Unavailable',
                   ok:health?.github?.ok, h:health?.github},
@@ -1120,9 +1118,9 @@ export default function App(){
                   ].map(({ico,lbl,act,dis,prime}:any)=>(
                     <button key={lbl}
                       onClick={act} disabled={dis}
-                      style={{display:'flex',alignItems:'center',gap:10,padding:'14px 16px',background:prime?'#E8414208':'var(--s1)',border:'none',cursor:dis?'not-allowed':'pointer',textAlign:'left',transition:'background .1s',opacity:dis?.5:1}}
-                      onMouseEnter={e=>{if(!dis)(e.currentTarget as HTMLButtonElement).style.background=prime?'#E8414215':'var(--s2)'}}
-                      onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background=prime?'#E8414208':'var(--s1)'}}>
+                      style={{display:'flex',alignItems:'center',gap:10,padding:'14px 16px',background:prime?'#4ECDC408':'var(--s1)',border:'none',cursor:dis?'not-allowed':'pointer',textAlign:'left',transition:'background .1s',opacity:dis?.5:1}}
+                      onMouseEnter={e=>{if(!dis)(e.currentTarget as HTMLButtonElement).style.background=prime?'#4ECDC415':'var(--s2)'}}
+                      onMouseLeave={e=>{(e.currentTarget as HTMLButtonElement).style.background=prime?'#4ECDC408':'var(--s1)'}}>
                       <span style={{fontSize:16,color:prime?'var(--red2)':'var(--ink3)'}}>{ico}</span>
                       <span style={{fontFamily:'var(--body)',fontSize:12,fontWeight:600,color:prime?'var(--red2)':'var(--ink)'}}>{lbl}</span>
                     </button>
@@ -1139,7 +1137,7 @@ export default function App(){
                     {[
                       {key:'AIRTABLE_API_KEY',     ok:!!health?.env?.airtable,     hint:'airtable.com/create/tokens'},
                       {key:'ANTHROPIC_API_KEY',     ok:!!health?.env?.anthropic,    hint:'console.anthropic.com'},
-                      {key:'SMTP_EMAIL + PASSWORD', ok:!!health?.smtp?.ok,          hint:'PrivateEmail credentials'},
+                      {key:'Gmail API_EMAIL + PASSWORD', ok:!!health?.gmail?.ok,          hint:'PrivateEmail credentials'},
                       {key:'GITHUB_TOKEN',          ok:!!health?.env?.githubToken,  hint:'5,000 req/hr vs 60 anon'},
                       {key:'HUNTER_API_KEY',        ok:!!health?.env?.hunterKey,    hint:'Optional · hunter.io'},
                       {key:'DISCORD_WEBHOOK_URL',   ok:!!health?.env?.discordWebhook,hint:'Optional · Discord channel'},
@@ -1217,7 +1215,7 @@ export default function App(){
                         display:'flex',flexDirection:'column',alignItems:'flex-start',
                         padding:'10px 14px',borderRadius:'var(--r)',
                         border:`1.5px solid ${scrapeSource===s.id?'var(--red2)':'var(--b)'}`,
-                        background:scrapeSource===s.id?'#E8414208':'var(--s2)',
+                        background:scrapeSource===s.id?'#4ECDC408':'var(--s2)',
                         cursor:'pointer',transition:'all .12s',flex:1,minWidth:130,textAlign:'left',
                       }}>
                       <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:3}}>
@@ -1677,7 +1675,7 @@ export default function App(){
                                 <tr key={lead.id}
                                   className={sel.has(lead.id)?'sel':''}
                                   onClick={()=>setDetailLead(detailLead?.id===lead.id?null:lead)}
-                                  style={{cursor:'pointer',background:detailLead?.id===lead.id?'#E8414208':''}}>
+                                  style={{cursor:'pointer',background:detailLead?.id===lead.id?'#4ECDC408':''}}>
                                   <td style={{padding:'9px 12px'}} onClick={e=>e.stopPropagation()}>
                                     <input type="checkbox" className="ck" checked={sel.has(lead.id)} onChange={e=>{const s=new Set(sel);e.target.checked?s.add(lead.id):s.delete(lead.id);setSel(s)}}/>
                                   </td>
@@ -1759,7 +1757,7 @@ export default function App(){
                           </div>
                         )}
                         {detailLead.bounced&&(
-                          <div style={{marginTop:6,padding:'8px 10px',background:'#E8414210',borderRadius:'var(--r)',border:'1px solid #E8414230'}}>
+                          <div style={{marginTop:6,padding:'8px 10px',background:'#4ECDC410',borderRadius:'var(--r)',border:'1px solid #4ECDC430'}}>
                             <div style={{fontFamily:'var(--mono)',fontSize:10,color:'var(--red)',fontWeight:600,marginBottom:2}}>⚡ Email bounced</div>
                             {detailLead.bounceReason&&<div style={{fontFamily:'var(--mono)',fontSize:9,color:'var(--ink3)',marginTop:2}}>{detailLead.bounceReason.slice(0,120)}</div>}
                           </div>
@@ -1798,7 +1796,7 @@ export default function App(){
                           {[
                             {tag:'Day 1',subj:detailLead.emailSubject,body:detailLead.emailBody,c:'#2563eb'},
                             {tag:'Day 5',subj:detailLead.followUp1Subject,body:detailLead.followUp1Body,c:'#d97706'},
-                            {tag:'Day 12',subj:detailLead.followUp2Subject,body:detailLead.followUp2Body,c:'#E84142'},
+                            {tag:'Day 12',subj:detailLead.followUp2Subject,body:detailLead.followUp2Body,c:'#4ECDC4'},
                           ].filter(e=>e.body).map(e=>(
                             <div key={e.tag} style={{marginBottom:8,background:'var(--s2)',borderRadius:'var(--r)',padding:'9px 11px',borderLeft:`3px solid ${e.c}`}}>
                               <div style={{fontFamily:'var(--mono)',fontSize:8,color:'var(--ink4)',marginBottom:3}}>{e.tag}</div>
@@ -1890,7 +1888,7 @@ export default function App(){
                 {preview.followUp2Body&&<div>
                   <div style={{fontFamily:'var(--mono)',fontSize:10,color:'var(--ink3)',textTransform:'uppercase',letterSpacing:'1px',marginBottom:8,display:'flex',alignItems:'center',gap:8}}>
                     Breakup Email · Day 12
-                    <span style={{color:'var(--red)',background:'#E8414210',padding:'1px 6px',borderRadius:3}}>Final touchpoint</span>
+                    <span style={{color:'var(--red)',background:'#4ECDC410',padding:'1px 6px',borderRadius:3}}>Final touchpoint</span>
                   </div>
                   <div className="em"><div>Subject: <span>{preview.followUp2Subject}</span></div></div>
                   <div className="ep">{preview.followUp2Body}</div>
@@ -2019,7 +2017,7 @@ export default function App(){
           {tab==='send'&&<>
             <div className="ph">
               <div className="ph-t">Send Campaign</div>
-              <div className="ph-s">Warmup-aware sending · auto-enforces daily limits · PrivateEmail SMTP · all sends logged to Airtable</div>
+              <div className="ph-s">Warmup-aware sending · auto-enforces daily limits · PrivateEmail Gmail API · all sends logged to Airtable</div>
             </div>
 
             {/* STEP 1 — PROVIDER */}
@@ -2091,7 +2089,7 @@ export default function App(){
                       <table style={{width:'100%',borderCollapse:'collapse',fontSize:12}}>
                         <tbody>
                           {validation.results.map((r:any)=>(
-                            <tr key={r.id} style={{borderBottom:'1px solid var(--b)',background:r.willSend?'transparent':'#E841420304'}}>
+                            <tr key={r.id} style={{borderBottom:'1px solid var(--b)',background:r.willSend?'transparent':'#4ECDC40304'}}>
                               <td style={{padding:'9px 12px',width:'22%'}}><strong style={{fontSize:12}}>{r.company}</strong></td>
                               <td style={{padding:'9px 12px',fontFamily:'var(--mono)',fontSize:11,width:'30%',maxWidth:220,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{r.email||<span style={{color:'var(--ink4)',fontStyle:'italic'}}>—</span>}</td>
                               <td style={{padding:'9px 12px',width:'18%'}}>
@@ -2099,8 +2097,8 @@ export default function App(){
                                   fontFamily:'var(--mono)',fontSize:9,fontWeight:600,textTransform:'uppercase',
                                   padding:'2px 8px',borderRadius:999,border:'1px solid',
                                   color:r.status==='ready'?'var(--green)':r.status==='role'?'var(--yellow)':r.status==='missing'?'var(--ink4)':'var(--red)',
-                                  background:r.status==='ready'?'#16a34a10':r.status==='role'?'#d9770610':r.status==='missing'?'var(--s3)':'#E8414210',
-                                  borderColor:r.status==='ready'?'#16a34a30':r.status==='role'?'#d9770630':r.status==='missing'?'var(--b2)':'#E8414230',
+                                  background:r.status==='ready'?'#16a34a10':r.status==='role'?'#d9770610':r.status==='missing'?'var(--s3)':'#4ECDC410',
+                                  borderColor:r.status==='ready'?'#16a34a30':r.status==='role'?'#d9770630':r.status==='missing'?'var(--b2)':'#4ECDC430',
                                 }}>
                                   {r.status==='ready'?'✓ Ready':r.status==='role'?'⚠ Role':r.status==='personal'?'✗ Personal':r.status==='edu'?'✗ Edu':r.status==='missing'?'○ Missing':'✗ Invalid'}
                                 </span>
@@ -2149,7 +2147,7 @@ export default function App(){
                 const budget = Math.max(0, dailyMax - sentToday)
                 const pct = Math.min(100, Math.round((sentToday/dailyMax)*100))
                 return(
-                  <div style={{marginBottom:16,padding:'14px 16px',background:budget===0?'#E8414208':'var(--s2)',border:`1px solid ${budget===0?'#E8414230':'var(--b)'}`,borderRadius:'var(--r)',display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
+                  <div style={{marginBottom:16,padding:'14px 16px',background:budget===0?'#4ECDC408':'var(--s2)',border:`1px solid ${budget===0?'#4ECDC430':'var(--b)'}`,borderRadius:'var(--r)',display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
                     <div style={{flexShrink:0}}>
                       <div style={{fontFamily:'var(--mono)',fontSize:10,color:'var(--ink3)',marginBottom:4}}>
                         Week {week} Warmup · {cooldownSec}s between sends
@@ -2202,7 +2200,7 @@ export default function App(){
               <div className="cklist" style={{marginTop:16}}>
                 {[
                   {lbl:'Airtable connected',ok:health?.airtable?.ok??false,soft:false},
-                  {lbl:'PrivateEmail SMTP verified',ok:health?.smtp?.ok??false,soft:!!health?.env?.smtpEmail&&!health?.smtp?.ok},
+                  {lbl:'PrivateEmail Gmail API verified',ok:health?.gmail?.ok??false,soft:!!health?.env?.gmailEmail&&!health?.gmail?.ok},
                   {lbl:'Emails generated',ok:stats.hasEmail>0,soft:false},
                   {lbl:'Validation complete',ok:!!validation,soft:false},
                   {lbl:`${validation?.summary?.willSend??0} leads cleared for sending`,ok:(validation?.summary?.willSend??0)>0,soft:false},
@@ -2249,7 +2247,7 @@ export default function App(){
             const active    = inboxLead || pending[0] || null
 
             const intentColor=(i:string)=>i==='interested'?'var(--green)':i==='not_now'?'var(--yellow)':i==='question'?'var(--blue)':i==='unsubscribe'?'var(--red)':'var(--ink3)'
-            const intentBg=(i:string)=>i==='interested'?'#16a34a12':i==='not_now'?'#d9770612':i==='question'?'#2563eb12':i==='unsubscribe'?'#E8414212':'var(--s3)'
+            const intentBg=(i:string)=>i==='interested'?'#16a34a12':i==='not_now'?'#d9770612':i==='question'?'#2563eb12':i==='unsubscribe'?'#4ECDC412':'var(--s3)'
             const intentLabel=(i:string)=>i==='interested'?'🔥 Interested':i==='not_now'?'⏳ Not Now':i==='question'?'❓ Question':i==='unsubscribe'?'🚫 Unsubscribe':'💬 Other'
 
             const sendReply=async(lead:Lead)=>{
@@ -2317,7 +2315,7 @@ export default function App(){
                       {pending.map(lead=>(
                         <div key={lead.id}
                           onClick={()=>{setInboxLead(lead);setReplyDraft(p=>({...p,[lead.id]:p[lead.id]??lead.suggestedReply??''}))}}
-                          style={{background:'var(--s1)',border:`1.5px solid ${active?.id===lead.id?'var(--red2)':'var(--b)'}`,borderRadius:'var(--r)',padding:'12px 14px',cursor:'pointer',transition:'all .12s',boxShadow:active?.id===lead.id?'0 0 0 3px #E8414215':'var(--sh)'}}>
+                          style={{background:'var(--s1)',border:`1.5px solid ${active?.id===lead.id?'var(--red2)':'var(--b)'}`,borderRadius:'var(--r)',padding:'12px 14px',cursor:'pointer',transition:'all .12s',boxShadow:active?.id===lead.id?'0 0 0 3px #4ECDC415':'var(--sh)'}}>
                           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
                             <strong style={{fontSize:13}}>{lead.company}</strong>
                             <span style={{fontFamily:'var(--mono)',fontSize:9,padding:'2px 7px',borderRadius:10,background:intentBg(lead.replyIntent),color:intentColor(lead.replyIntent)}}>
@@ -2399,11 +2397,11 @@ export default function App(){
                           />
                           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginTop:12}}>
                             <div style={{fontFamily:'var(--mono)',fontSize:10,color:'var(--ink4)'}}>
-                              Sends from brandon@tradecafe.ai · saved to Sent folder
+                              Sends via Gmail API from brandon@tradecafe.ai
                             </div>
                             <div style={{display:'flex',gap:8}}>
                               {active.replyIntent==='unsubscribe'&&(
-                                <span style={{fontFamily:'var(--mono)',fontSize:10,color:'var(--red)',padding:'4px 10px',background:'#E8414210',borderRadius:'var(--r)'}}>⚠ Unsubscribe — keep reply brief</span>
+                                <span style={{fontFamily:'var(--mono)',fontSize:10,color:'var(--red)',padding:'4px 10px',background:'#4ECDC410',borderRadius:'var(--r)'}}>⚠ Unsubscribe — keep reply brief</span>
                               )}
                               <button
                                 className="btn btn-red"
@@ -2464,7 +2462,7 @@ export default function App(){
             const tm: Record<string,number>={}
             leads.forEach(l=>{const t=l.companyType||'Unknown';tm[t]=(tm[t]||0)+1})
             const types   = Object.entries(tm).sort((a,b)=>b[1]-a[1])
-            const tColors = ['#E84142','#2563eb','#16a34a','#d97706','#7c3aed','#6b7280']
+            const tColors = ['#4ECDC4','#2563eb','#16a34a','#d97706','#7c3aed','#6b7280']
             const circ    = 2*Math.PI*50
 
             const ABar=({pct,col,h=8,delay=0}:{pct:number,col:string,h?:number,delay?:number})=>(
@@ -2484,13 +2482,13 @@ export default function App(){
                 <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:12}}>
                   {[
                     {lbl:'Total Leads',v:total,   c:'var(--ink)', bg:'var(--s1)'},
-                    {lbl:'Emails Sent',v:sent,    c:'#E84142',   bg:'#E8414206'},
+                    {lbl:'Emails Sent',v:sent,    c:'#4ECDC4',   bg:'#4ECDC406'},
                     {lbl:'Opens',      v:opened,  c:'#0891b2',   bg:'#0891b206'},
                     {lbl:'Replies',    v:replied, c:'#16a34a',   bg:'#16a34a06'},
                     {lbl:'Queued',     v:queued,  c:'#d97706',   bg:'#d9770606'},
                     {lbl:'High-Fit',   v:leads.filter(l=>l.leadScore>60).length,c:'#7c3aed',bg:'#7c3aed06'},
                     {lbl:'Avg Score',  v:avgScore,c:'var(--ink3)',bg:'var(--s2)'},
-                    {lbl:'Booked',     v:booked,  c:'#E84142',   bg:'#E8414206'},
+                    {lbl:'Booked',     v:booked,  c:'#4ECDC4',   bg:'#4ECDC406'},
                   ].map((s,i)=>(
                     <div key={s.lbl} className="bcell fade-up" style={{background:s.bg,padding:'16px 18px',animationDelay:`${i*35}ms`}}>
                       <div className="count-up" style={{fontFamily:'var(--sans)',fontWeight:800,fontSize:32,letterSpacing:'-2px',color:s.c,lineHeight:1,animationDelay:`${i*35}ms`}}>{s.v}</div>
@@ -2510,7 +2508,7 @@ export default function App(){
                       {lbl:'Sent',       v:sent,    c:'#d97706',d:150},
                       {lbl:'Opened',     v:opened,  c:'#0891b2',d:200},
                       {lbl:'Replied',    v:replied, c:'#16a34a',d:250},
-                      {lbl:'Booked',     v:booked,  c:'#E84142',d:300},
+                      {lbl:'Booked',     v:booked,  c:'#4ECDC4',d:300},
                     ].map(s=>{
                       const pct=total>0?Math.round(s.v/total*100):0
                       return(
@@ -2551,7 +2549,7 @@ export default function App(){
                             return(
                               <div key={date} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',height:'100%',justifyContent:'flex-end',position:'relative',zIndex:1}}>
                                 <span className="fade-up" style={{fontFamily:'var(--mono)',fontSize:9,color:'var(--ink3)',marginBottom:3,animationDelay:`${i*60}ms`}}>{val}</span>
-                                <div className="bar-grow" style={{width:'68%',height:h,background:'linear-gradient(to top,#E84142,#E84142aa)',borderRadius:'3px 3px 0 0',boxShadow:'0 -2px 8px #E8414230',animationDelay:`${i*60}ms`,transformOrigin:'bottom'}}/>
+                                <div className="bar-grow" style={{width:'68%',height:h,background:'linear-gradient(to top,#4ECDC4,#4ECDC4aa)',borderRadius:'3px 3px 0 0',boxShadow:'0 -2px 8px #4ECDC430',animationDelay:`${i*60}ms`,transformOrigin:'bottom'}}/>
                                 <span style={{fontFamily:'var(--mono)',fontSize:8,color:'var(--ink4)',position:'absolute',bottom:0}}>{`${d2.getMonth()+1}/${d2.getDate()}`}</span>
                               </div>
                             )
@@ -2579,7 +2577,7 @@ export default function App(){
                       {lbl:'Reply → Booked',n:booked,  d:replied,  tgt:30, delay:240},
                     ].map(r=>{
                       const pct=r.d>0?Math.round(r.n/r.d*100):0
-                      const col=pct>=r.tgt?'#16a34a':pct>=r.tgt*0.5?'#d97706':'#E84142'
+                      const col=pct>=r.tgt?'#16a34a':pct>=r.tgt*0.5?'#d97706':'#4ECDC4'
                       return(
                         <div key={r.lbl} className="fade-up" style={{marginBottom:14,animationDelay:`${r.delay}ms`}}>
                           <div style={{display:'flex',justifyContent:'space-between',marginBottom:4,alignItems:'flex-end'}}>
@@ -2606,7 +2604,7 @@ export default function App(){
                     </div>
                     {(()=>{
                       const buckets=[
-                        {lbl:'81–100',n:leads.filter(l=>l.leadScore>80).length,c:'#E84142',d:0},
+                        {lbl:'81–100',n:leads.filter(l=>l.leadScore>80).length,c:'#4ECDC4',d:0},
                         {lbl:'61–80', n:leads.filter(l=>l.leadScore>60&&l.leadScore<=80).length,c:'#16a34a',d:80},
                         {lbl:'41–60', n:leads.filter(l=>l.leadScore>40&&l.leadScore<=60).length,c:'#d97706',d:160},
                         {lbl:'21–40', n:leads.filter(l=>l.leadScore>20&&l.leadScore<=40).length,c:'#2563eb',d:240},
@@ -2672,7 +2670,7 @@ export default function App(){
                     {lbl:'Mid-Fit',     sub:'Score 21–60',      n:leads.filter(l=>l.leadScore>20&&l.leadScore<=60&&l.contactEmail&&!l.disqualified).length, c:'#d97706',action:'Bulk sequence'},
                     {lbl:'Low Signal',  sub:'Score 0–20',       n:leads.filter(l=>l.leadScore<=20&&!l.disqualified).length,c:'#6b7280',action:'Consider disqualify'},
                     {lbl:'No Email',    sub:'Missing contact',  n:leads.filter(l=>!l.contactEmail&&!l.disqualified).length,c:'#2563eb',action:'Run Hunter'},
-                    {lbl:'Bounced',     sub:'Invalid address',  n:bounced,c:'#E84142',action:'Find replacement'},
+                    {lbl:'Bounced',     sub:'Invalid address',  n:bounced,c:'#4ECDC4',action:'Find replacement'},
                     {lbl:'Disqualified',sub:'Removed from pipe',n:disq,c:'var(--b2)',action:'Not in pipeline'},
                   ].map((m,i)=>(
                     <div key={m.lbl} className="bcell fade-up" style={{padding:'14px 16px',animationDelay:`${i*40}ms`}}>

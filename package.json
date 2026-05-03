@@ -9,15 +9,13 @@
   },
   "dependencies": {
     "airtable": "^0.12.2",
-    "imapflow": "^1.2.18",
+    "googleapis": "^144.0.0",
     "next": "14.2.29",
-    "nodemailer": "^6.9.16",
     "react": "^18",
     "react-dom": "^18"
   },
   "devDependencies": {
     "@types/node": "^20",
-    "@types/nodemailer": "^6.4.17",
     "@types/react": "^18",
     "typescript": "^5"
   }

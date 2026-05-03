@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server'
-import nodemailer from 'nodemailer'
+import { verifyGmail } from '@/lib/gmail'
 
 const BASE_ID = 'appCYgmFc8vTfwyv1'
 const LEADS_TABLE = 'tblAsQXKEK9chUaT6'
@@ -8,23 +8,22 @@ const LOG_TABLE = 'tbli5CIBIqRXIkRqe'
 export async function GET() {
   const results: Record<string, any> = {}
 
-  // Check which env vars are set
   results.env = {
-    airtable:    !!process.env.AIRTABLE_API_KEY,
-    anthropic:   !!process.env.ANTHROPIC_API_KEY,
-    smtpEmail:   !!process.env.SMTP_EMAIL,
-    smtpPass:    !!process.env.SMTP_PASSWORD,
-    githubToken: !!process.env.GITHUB_TOKEN,
-    smtpEmailVal: process.env.SMTP_EMAIL || null,
+    airtable:       !!process.env.AIRTABLE_API_KEY,
+    anthropic:      !!process.env.ANTHROPIC_API_KEY,
+    googleClient:   !!process.env.GOOGLE_CLIENT_ID,
+    googleSecret:   !!process.env.GOOGLE_CLIENT_SECRET,
+    googleRefresh:  !!process.env.GOOGLE_REFRESH_TOKEN,
+    smtpEmail:      !!process.env.SMTP_EMAIL,
+    smtpEmailVal:   process.env.SMTP_EMAIL || null,
+    githubToken:    !!process.env.GITHUB_TOKEN,
     hunterKey:      !!process.env.HUNTER_API_KEY,
     discordWebhook: !!process.env.DISCORD_WEBHOOK_URL,
   }
 
-  // Ping Airtable and get real record counts via pagination
+  // Ping Airtable
   try {
-    // Count leads by paginating through all records
-    let leadsCount = 0
-    let offset: string | undefined
+    let leadsCount = 0, offset: string | undefined
     do {
       const qs = offset ? `pageSize=100&offset=${offset}` : 'pageSize=100'
       const r = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${LEADS_TABLE}?${qs}`, {
@@ -36,9 +35,7 @@ export async function GET() {
       offset = d.offset
     } while (offset)
 
-    // Count campaign log records
-    let logsCount = 0
-    let logOffset: string | undefined
+    let logsCount = 0, logOffset: string | undefined
     do {
       const qs = logOffset ? `pageSize=100&offset=${logOffset}` : 'pageSize=100'
       const lr = await fetch(`https://api.airtable.com/v0/${BASE_ID}/${LOG_TABLE}?${qs}`, {
@@ -60,12 +57,7 @@ export async function GET() {
     if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
     const r = await fetch('https://api.github.com/rate_limit', { headers })
     const d = await r.json()
-    results.github = {
-      ok: r.ok,
-      remaining: d.rate?.remaining ?? 0,
-      limit: d.rate?.limit ?? 60,
-      authenticated: !!process.env.GITHUB_TOKEN,
-    }
+    results.github = { ok: r.ok, remaining: d.rate?.remaining ?? 0, limit: d.rate?.limit ?? 60, authenticated: !!process.env.GITHUB_TOKEN }
   } catch (e: any) {
     results.github = { ok: false, error: e.message }
   }
@@ -73,25 +65,10 @@ export async function GET() {
   // Check Anthropic
   results.anthropic = { ok: !!process.env.ANTHROPIC_API_KEY }
 
-  // Check SMTP if credentials exist
-  if (process.env.SMTP_EMAIL && process.env.SMTP_PASSWORD) {
-    try {
-      const t = nodemailer.createTransport({
-        host: 'imap.gmail.com', port: 587, secure: false,
-        auth: { user: process.env.SMTP_EMAIL, pass: process.env.SMTP_PASSWORD },
-        tls: { rejectUnauthorized: false },
-        connectionTimeout: 8000, greetingTimeout: 8000, socketTimeout: 8000,
-      })
-      await t.verify()
-      t.close()
-      results.smtp = { ok: true, email: process.env.SMTP_EMAIL }
-    } catch (e: any) {
-      results.smtp = { ok: false, error: e.message, email: process.env.SMTP_EMAIL }
-    }
-  } else {
-    results.smtp = { ok: false, error: 'Credentials not configured', email: null }
-  }
+  // Check Gmail API (replaces SMTP check)
+  const gmailResult = await verifyGmail()
+  results.gmail = { ok: gmailResult.ok, email: gmailResult.email || process.env.SMTP_EMAIL || null, error: gmailResult.error }
 
-  const allOk = results.airtable.ok && results.anthropic.ok
+  const allOk = results.airtable.ok && results.anthropic.ok && results.gmail.ok
   return NextResponse.json({ ok: allOk, ...results, timestamp: new Date().toISOString() })
 }
