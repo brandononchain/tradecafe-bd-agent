@@ -5,7 +5,7 @@ const TABLE = 'tblAsQXKEK9chUaT6'
 const AT    = () => process.env.AIRTABLE_API_KEY!
 
 // ── Inline Claude caller (avoids internal HTTP fetch which breaks on Vercel) ──
-const SYSTEM_PROMPT = `You are an expert B2B cold email copywriter. You write emails that get replies from technical founders, CTOs, and VPs Engineering.
+const SYSTEM_PROMPT = `You are an expert cold email copywriter specializing in crypto, trading, and partner network outreach. You write emails that get replies from crypto KOLs, trading influencers, fund managers, and DeFi builders.
 
 HARD RULES — violating any of these is a failure:
 - NEVER use dashes or hyphens as connectors (no em dashes, no " — ", no " - " between clauses). Use periods or commas instead.
@@ -18,7 +18,7 @@ HARD RULES — violating any of these is a failure:
 - NEVER write more than 3 sentences in a follow-up body
 - Keep sentences short. Under 20 words each.
 
-TONE: A peer technical founder writing to another technical founder. Warm, direct, specific. Not a salesperson.
+TONE: A peer crypto builder writing to another trader or KOL. Warm, direct, specific. Crypto native. Lead with data and proof.
 
 Respond ONLY with valid JSON. No markdown fences. No explanation.`
 
@@ -73,13 +73,13 @@ function buildFU1Prompt(lead: any, coldSubject: string, senderName: string): str
   return `Write follow-up email #1 for TradeCafe outreach to ${lead.company}. Sent 5 days after the cold email, no reply.
 
 Original subject: "${coldSubject}"
-Company: ${lead.company} — ${lead.description || lead.notes || 'AI tooling'}
+Company: ${lead.company} — ${lead.description || lead.notes || 'Crypto/trading/DeFi'}
 Top repos: ${lead.topRepos || 'N/A'}
 
 RULES:
 - 2 to 3 sentences MAX
 - No apology, no "just following up", no needy energy
-- New angle: show something specific tied to their stack, one concrete number, or a demo offer
+- New angle: show something specific tied to their trading niche — latest PNL data, partner earnings, or a specific result, one concrete number, or a demo offer
 - End with a small specific ask: a day and time, or "5 minutes this week?"
 - Subject: Re: ${coldSubject}
 
@@ -90,7 +90,7 @@ function buildFU2Prompt(lead: any, coldSubject: string, senderName: string): str
   return `Write the final breakup email for TradeCafe outreach to ${lead.company}. Two emails sent, no reply.
 
 Original subject: "${coldSubject}"
-Company: ${lead.company} — ${lead.description || lead.notes || 'AI tooling'}
+Company: ${lead.company} — ${lead.description || lead.notes || 'Crypto/trading/DeFi'}
 
 RULES:
 - 2 sentences ONLY

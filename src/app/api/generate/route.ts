@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-const SYSTEM_PROMPT = `You are an expert B2B cold email copywriter. You write emails that get replies from technical founders, CTOs, and VPs Engineering. You have studied every high-performing cold email sent at Linear, Vercel, Stripe, and Superhuman.
+const SYSTEM_PROMPT = `You are an expert cold email copywriter specializing in crypto, trading, and partner network outreach. You write emails that get replies from crypto KOLs, trading influencers, fund managers, DeFi builders, and community leaders. You understand crypto Twitter culture, trading lingo, and what makes partnership pitches land in this space.
 
 HARD RULES — violating any of these is a failure:
 - NEVER use dashes or hyphens as connectors (no em dashes, no " — ", no " - " between clauses). Use periods or commas instead.
@@ -8,12 +8,12 @@ HARD RULES — violating any of these is a failure:
 - NEVER say: "Hope this finds you well", "I wanted to reach out", "touching base", "circling back", "following up", "just checking in", "wanted to see", "quick question", "synergy", "game-changer", "revolutionary", "streamline", "leverage", "utilize", "pain points"
 - NEVER use ALL CAPS anywhere
 - NEVER use more than one exclamation mark in the entire email
-- NEVER give the recipient two equal choices ("book a call OR try the trial") — one primary ask, one quiet secondary
+- NEVER give the recipient two equal choices ("book a call OR try the platform") — one primary ask, one quiet secondary
 - NEVER write more than 6 sentences in a cold email body
 - NEVER write more than 3 sentences in a follow-up body
 - Keep sentences short. Under 20 words each.
 
-TONE: A peer technical founder writing to another technical founder. Warm, direct, specific. Not a salesperson.
+TONE: A peer crypto builder writing to another trader or KOL. Warm, direct, specific. Crypto native language is fine. Not a salesperson. Lead with data and proof, not hype.
 
 Respond ONLY with valid JSON. No markdown fences. No explanation.`
 
@@ -50,16 +50,15 @@ function buildFollowUp1Prompt(lead: any, coldSubject: string, senderName: string
   return `Write follow-up email #1 for TradeCafe outreach to ${lead.company}. Sent 5 days after the cold email, no reply received.
 
 Original subject: "${coldSubject}"
-Company: ${lead.company} — ${lead.description || lead.notes || 'AI tooling'}
-Top repos: ${lead.topRepos || 'N/A'}
+Company: ${lead.company} — ${lead.description || lead.notes || 'Crypto/trading/DeFi'}
 
 RULES:
 - 2 to 3 sentences MAX. Respect their time.
 - No apology, no "just following up", no needy energy
-- New angle: show something specific — a demo relevant to their stack, a result from a similar team, one concrete number
+- New angle: share something specific — latest PNL card data, a partner earnings milestone this month, or a concrete revenue share number
 - End with a small ask: a specific day and time, or "5 minutes this week?"
 - Subject: Re: ${coldSubject}
-- Tone: confident, brief, human
+- Tone: confident, brief, crypto native
 
 Return JSON: {"subject":"Re: ${coldSubject}","body":"..."}`
 }
@@ -68,12 +67,12 @@ function buildFollowUp2Prompt(lead: any, coldSubject: string, senderName: string
   return `Write the final breakup email for TradeCafe outreach to ${lead.company}. Two emails sent, no reply.
 
 Original subject: "${coldSubject}"
-Company: ${lead.company} — ${lead.description || lead.notes || 'AI tooling'}
+Company: ${lead.company} — ${lead.description || lead.notes || 'Crypto/trading/DeFi'}
 
 RULES:
 - 2 sentences ONLY. No exceptions.
-- Sentence 1: one final observation or insight specific to their work that they might find genuinely useful, even without replying
-- Sentence 2: a graceful exit. "No worries if the timing is off, I will leave it here." Friendly, zero pressure, zero guilt.
+- Sentence 1: one final insight relevant to their trading niche or crypto activity that they might find genuinely useful, even without replying
+- Sentence 2: a graceful exit. "No worries if the timing is off, leaving it here." Friendly, zero pressure, zero guilt.
 - No passive aggression. No "I guess you're not interested." No "last chance."
 - Subject: Re: ${coldSubject}
 

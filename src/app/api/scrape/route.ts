@@ -39,7 +39,7 @@ function emailPatterns(first: string, last: string, domain: string): string[] {
   return p
 }
 
-const PRIORITY_TITLES = ['cto','co-founder','cofounder','founder','vp engineering','head of engineering','ceo','chief technology','cpo']
+const PRIORITY_TITLES = ['cto','co-founder','cofounder','founder','ceo','head of trading','trader','portfolio manager','fund manager','head of growth','community lead','head of partnerships','bd lead','chief investment','managing partner','quantitative analyst','head of research']
 const scoreBio = (bio: string) => PRIORITY_TITLES.filter(r => (bio || '').toLowerCase().includes(r)).length
 
 // Try to find a GitHub org for a non-GitHub company by searching

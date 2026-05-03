@@ -5,26 +5,26 @@ import { useState, useRef, useCallback, useEffect } from 'react'
 // Reads use field names directly since Airtable REST API returns fields by name
 
 const TARGETS = [
-  {org:'e2b-dev',name:'E2B',type:'Dev Tools'},
-  {org:'inngest',name:'Inngest',type:'Dev Tools'},
-  {org:'triggerdotdev',name:'Trigger.dev',type:'Dev Tools'},
-  {org:'modal-labs',name:'Modal Labs',type:'Dev Tools'},
-  {org:'traceloop',name:'Traceloop',type:'Dev Tools'},
-  {org:'langfuse',name:'Langfuse',type:'Dev Tools'},
-  {org:'agentops-ai',name:'AgentOps',type:'AI Startup'},
-  {org:'crewaiinc',name:'CrewAI',type:'AI Startup'},
-  {org:'langgenius',name:'Dify.AI',type:'AI Startup'},
-  {org:'mendableai',name:'Mendable',type:'AI Startup'},
-  {org:'FlowiseAI',name:'Flowiseai',type:'AI Startup'},
-  {org:'phidatahq',name:'Phidata',type:'AI Startup'},
-  {org:'superagent-ai',name:'Superagent',type:'AI Startup'},
-  {org:'replicate',name:'Replicate',type:'AI Startup'},
-  {org:'cohere-ai',name:'Cohere',type:'Enterprise'},
-  {org:'fly-apps',name:'Fly.io',type:'SaaS'},
-  {org:'render-oss',name:'Render',type:'SaaS'},
-  {org:'relevanceai',name:'Relevance AI',type:'AI Startup'},
-  {org:'steamship-core',name:'Steamship',type:'AI Startup'},
-  {org:'fixieai',name:'Fixie AI',type:'AI Startup'},
+  {org:'ccxt',name:'CCXT',type:'Trading Tools'},
+  {org:'freqtrade',name:'Freqtrade',type:'Algo Trading'},
+  {org:'hummingbot',name:'Hummingbot',type:'Algo Trading'},
+  {org:'jesse-ai',name:'Jesse AI',type:'AI Trading'},
+  {org:'Superalgos',name:'Superalgos',type:'Algo Trading'},
+  {org:'3commas-io',name:'3Commas',type:'Trading Tools'},
+  {org:'shrimpy-dev',name:'Shrimpy',type:'Trading Tools'},
+  {org:'Uniswap',name:'Uniswap',type:'DeFi'},
+  {org:'aave',name:'Aave',type:'DeFi'},
+  {org:'compound-finance',name:'Compound',type:'DeFi'},
+  {org:'tradingview',name:'TradingView',type:'Trading Tools'},
+  {org:'CryptoSignal',name:'CryptoSignal',type:'Trading Tools'},
+  {org:'Dexalot',name:'Dexalot',type:'DeFi'},
+  {org:'drift-labs',name:'Drift Protocol',type:'DeFi'},
+  {org:'Jupiter-Exchange',name:'Jupiter',type:'DeFi'},
+  {org:'phantom',name:'Phantom',type:'Wallet'},
+  {org:'LedgerHQ',name:'Ledger',type:'Wallet'},
+  {org:'bybit-exchange',name:'Bybit',type:'Exchange'},
+  {org:'binance',name:'Binance',type:'Exchange'},
+  {org:'okx',name:'OKX',type:'Exchange'},
 ]
 
 type Lead={
@@ -401,7 +401,7 @@ export default function App(){
   const[sending,setSending]=useState(false)
   const[sendPct,setSendPct]=useState(0)
   const[preview,setPreview]=useState<Lead|null>(null)
-  const[provider,setProvider]=useState<'privateemail'|'gmail'>('privateemail')
+  const[provider,setProvider]=useState<'gmail'>('gmail')
   // CRM search + filter + detail panel
   const[crmSearch,setCrmSearch]=useState('')
   const[crmFilter,setCrmFilter]=useState('all')
@@ -475,7 +475,7 @@ export default function App(){
       if(r.airtable?.ok)addLog(`✓ Airtable — ${r.airtable.leadsCount} leads`,'o')
       else addLog(`✗ Airtable: ${r.airtable?.error||'not configured'}`,'e')
       if(r.github?.ok)addLog(`✓ GitHub — ${r.github.remaining}/${r.github.limit} req/hr`,'o')
-      if(r.gmail?.ok)addLog(`✓ PrivateEmail — ${r.gmail.email}`,'o')
+      if(r.gmail?.ok)addLog(`✓ Gmail API — ${r.gmail.email}`,'o')
       else if(r.env?.gmailEmail)addLog('✗ Gmail API auth failed','e')
       if(r.anthropic?.ok)addLog('✓ Anthropic API ready','o')
     }catch(e:any){addLog(`✗ Health: ${e.message}`,'e')}
@@ -799,7 +799,7 @@ export default function App(){
       addLog(`→ ${lead.company} (${lead.contactEmail})`,'i')
       try{
         let msgId=`sent-${Date.now()}`
-        if(provider==='privateemail'){
+        if(provider==='gmail'){
           const r=await fetch('/api/send',{method:'POST',headers:{'Content-Type':'application/json'},
             body:JSON.stringify({to:lead.contactEmail,subject:lead.emailSubject,body:lead.emailBody,recordId:lead.id})
           }).then(r=>r.json())
@@ -1137,7 +1137,7 @@ export default function App(){
                     {[
                       {key:'AIRTABLE_API_KEY',     ok:!!health?.env?.airtable,     hint:'airtable.com/create/tokens'},
                       {key:'ANTHROPIC_API_KEY',     ok:!!health?.env?.anthropic,    hint:'console.anthropic.com'},
-                      {key:'Gmail API_EMAIL + PASSWORD', ok:!!health?.gmail?.ok,          hint:'PrivateEmail credentials'},
+                      {key:'GOOGLE_CLIENT_ID + PASSWORD', ok:!!health?.gmail?.ok,          hint:'Gmail API credentials'},
                       {key:'GITHUB_TOKEN',          ok:!!health?.env?.githubToken,  hint:'5,000 req/hr vs 60 anon'},
                       {key:'HUNTER_API_KEY',        ok:!!health?.env?.hunterKey,    hint:'Optional · hunter.io'},
                       {key:'DISCORD_WEBHOOK_URL',   ok:!!health?.env?.discordWebhook,hint:'Optional · Discord channel'},
@@ -1899,7 +1899,7 @@ export default function App(){
               <span className="alert-icon">💡</span>
               <div className="alert-body">
                 <div className="alert-title">Add contact emails to unlock campaign sending</div>
-                Open Airtable → TradeCafe BD Leads → fill the Contact Email column. Target CTOs, VPs Engineering, founders. Use <strong>Hunter.io</strong>, <strong>Apollo.io</strong>, or <strong>LinkedIn Sales Navigator</strong>.
+                Open Airtable → TradeCafe BD Leads → fill the Contact Email column. Target crypto KOLs, trading influencers, DeFi builders, and fund managers. Use <strong>Hunter.io</strong>, <strong>X/Twitter</strong>, or <strong>LinkedIn</strong>.
               </div>
             </div>
           </>}
@@ -1909,7 +1909,7 @@ export default function App(){
           {tab==='generate'&&<>
             <div className="ph">
               <div className="ph-t">Email Generation</div>
-              <div className="ph-s">Claude writes personalised cold emails per lead using GitHub profile and TradeCafe value prop — saved directly to Airtable</div>
+              <div className="ph-s">Claude writes personalised cold emails per lead using their trading profile, crypto activity, and TradeCafe partner revenue share pitch — saved directly to Airtable</div>
             </div>
             <div className="card">
               <div className="card-hd">
@@ -2017,7 +2017,7 @@ export default function App(){
           {tab==='send'&&<>
             <div className="ph">
               <div className="ph-t">Send Campaign</div>
-              <div className="ph-s">Warmup-aware sending · auto-enforces daily limits · PrivateEmail Gmail API · all sends logged to Airtable</div>
+              <div className="ph-s">Warmup-aware sending · auto-enforces daily limits · Gmail API · all sends logged to Airtable</div>
             </div>
 
             {/* STEP 1 — PROVIDER */}
@@ -2025,7 +2025,7 @@ export default function App(){
               <div className="ct" style={{marginBottom:16}}>Email Provider</div>
               <div className="pt">
                 {[
-                  {id:'privateemail',name:'PrivateEmail (Namecheap)',sub:'mail.privateemail.com · STARTTLS :587 · Sends from Vercel server'},
+                  {id:'gmail',name:'Gmail (Google Workspace)',sub:'Gmail API · OAuth2 · Sends via Gmail API'},
                   {id:'gmail',name:'Gmail',sub:'Via Claude Gmail MCP · Direct send from Gmail account'},
                 ].map(p=>(
                   <div key={p.id} className={`po ${provider===p.id?'a':''}`} onClick={()=>setProvider(p.id as any)}>
@@ -2184,7 +2184,7 @@ export default function App(){
                   <span className="alert-icon">⚠</span>
                   <div className="alert-body">
                     <div className="alert-title">Run validation before sending</div>
-                    Sending without validation caused the previous spam block. PrivateEmail blocks bulk sends to personal/invalid addresses.
+                    Sending without validation caused the previous spam block. Gmail blocks bulk sends to personal/invalid addresses.
                   </div>
                 </div>
               )}
@@ -2200,7 +2200,7 @@ export default function App(){
               <div className="cklist" style={{marginTop:16}}>
                 {[
                   {lbl:'Airtable connected',ok:health?.airtable?.ok??false,soft:false},
-                  {lbl:'PrivateEmail Gmail API verified',ok:health?.gmail?.ok??false,soft:!!health?.env?.gmailEmail&&!health?.gmail?.ok},
+                  {lbl:'Gmail API verified',ok:health?.gmail?.ok??false,soft:!!health?.env?.gmailEmail&&!health?.gmail?.ok},
                   {lbl:'Emails generated',ok:stats.hasEmail>0,soft:false},
                   {lbl:'Validation complete',ok:!!validation,soft:false},
                   {lbl:`${validation?.summary?.willSend??0} leads cleared for sending`,ok:(validation?.summary?.willSend??0)>0,soft:false},

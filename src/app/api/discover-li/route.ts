@@ -13,10 +13,12 @@ const SKIP = new Set([
 
 // AI/ML company keywords for filtering LI search results
 const AI_KEYWORDS = [
-  'artificial intelligence', 'machine learning', 'large language model', 'llm',
-  'ai agent', 'generative ai', 'deep learning', 'nlp', 'computer vision',
-  'ai platform', 'ml platform', 'foundation model', 'ai infrastructure',
-  'vector database', 'embedding', 'rag', 'autonomous agent',
+  'cryptocurrency', 'crypto trading', 'bitcoin', 'blockchain', 'defi',
+  'decentralized finance', 'trading platform', 'algorithmic trading',
+  'forex', 'quantitative trading', 'digital assets', 'web3',
+  'trading signals', 'crypto exchange', 'token', 'staking',
+  'yield', 'liquidity', 'smart contract', 'wallet',
+  'nft', 'metaverse', 'fintech', 'prop trading',
 ]
 
 interface ProxycurlCompany {
