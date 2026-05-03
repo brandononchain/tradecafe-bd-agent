@@ -392,7 +392,7 @@ export default function App(){
   const[hl,setHL]=useState(false)
   const[scrSt,setScrSt]=useState<Record<string,'idle'|'running'|'done'|'fail'>>({})
   const[scraped,setScraped]=useState<Record<string,any>>({})
-  const[scrapeSource,setScrapeSource]=useState<'github'|'yc'|'hackernews'|'linkedin'>('github')
+  const[scrapeSource,setScrapeSource]=useState<'github'|'yc'|'hackernews'|'linkedin'|'coingecko'|'coinmarketcap'|'tradingview'|'x'>('github')
   const[sel,setSel]=useState<Set<string>>(new Set())
   const[genning,setGenning]=useState(false)
   const[genPct,setGenPct]=useState(0)
@@ -497,7 +497,8 @@ export default function App(){
     setDiscovering(true)
     setDiscovered([])
     const sourceLabels: Record<string,string> = {
-      github:'GitHub', yc:'YC + Show HN', hackernews:'Hacker News', linkedin:'LinkedIn'
+      github:'GitHub', yc:'YC + Show HN', hackernews:'Hacker News', linkedin:'LinkedIn',
+      coingecko:'CoinGecko', coinmarketcap:'CoinMarketCap', tradingview:'TradingView', x:'X / Twitter'
     }
     addLog(`=== Discovering new leads from ${sourceLabels[scrapeSource]} ===`, 'i')
     try {
@@ -528,6 +529,23 @@ export default function App(){
         const topicsQ = activeTopics.size ? `?topics=${Array.from(activeTopics).join(',')}` : ''
         const r = await fetch(`/api/discover-li${topicsQ}`).then(r=>r.json())
         if (!r.ok) throw new Error(r.setup||r.error||'LinkedIn discovery failed')
+        orgs = r.orgs
+      } else if (scrapeSource === 'coingecko') {
+        const r = await fetch('/api/discover-cg?mode=trending').then(r=>r.json())
+        if (!r.ok) throw new Error(r.error||'CoinGecko discovery failed')
+        orgs = r.orgs
+      } else if (scrapeSource === 'coinmarketcap') {
+        const r = await fetch('/api/discover-cmc?mode=trending').then(r=>r.json())
+        if (!r.ok) throw new Error(r.setup||r.error||'CoinMarketCap discovery failed')
+        orgs = r.orgs
+      } else if (scrapeSource === 'tradingview') {
+        const r = await fetch('/api/discover-tv').then(r=>r.json())
+        if (!r.ok) throw new Error(r.error||'TradingView discovery failed')
+        orgs = r.orgs
+      } else if (scrapeSource === 'x') {
+        const topicsQ = activeTopics.size ? `?topics=${Array.from(activeTopics).join(',')}` : ''
+        const r = await fetch(`/api/discover-x${topicsQ}`).then(r=>r.json())
+        if (!r.ok) throw new Error(r.error||'X/Twitter discovery failed')
         orgs = r.orgs
       }
       setDiscovered(orgs)
@@ -561,7 +579,7 @@ export default function App(){
     const targets = searchMode === 'discover' && discovered.length > 0
       ? discovered.map(o => ({ org: o.org, name: o.name, type: o.type, website: o.website }))
       : TARGETS
-    const srcLabel = scrapeSource==='github'?'GitHub':scrapeSource==='yc'?'YC/ShowHN':scrapeSource==='hackernews'?'HN':'LinkedIn'
+    const srcLabel = sourceLabels[scrapeSource] || scrapeSource
     addLog(`=== Enriching ${targets.length} leads from ${srcLabel} ===`, 'i')
     const rl = await fetch('/api/scrape?org=ratelimit').then(r=>r.json()).catch(()=>null)
     if (rl?.ok) addLog(`GitHub: ${rl.remaining}/${rl.limit} req remaining`, rl.remaining<40?'w':'i')
@@ -598,7 +616,7 @@ export default function App(){
           "AI Tools Used":    d.aiTools,
           "Status":           'New',
           "Sequence Status":  'Cold',
-          "Source":           scrapeSource==='github'?'GitHub':scrapeSource==='yc'?'YC Companies':scrapeSource==='hackernews'?'Hacker News':'LinkedIn',
+          "Source":           sourceLabels[scrapeSource] || scrapeSource,
           "Date Added":       new Date().toISOString().split('T')[0],
           "Personalization Notes": d.description||'',
         }
@@ -1195,7 +1213,7 @@ export default function App(){
           {tab==='scrape'&&<>
             <div className="ph">
               <div className="ph-t">Lead Discovery</div>
-              <div className="ph-s">Multi-source lead gen · GitHub · YC · HN · LinkedIn · discover crypto traders, KOLs, DeFi builders → enrich → generate → send</div>
+              <div className="ph-s">8 lead sources · GitHub · CoinGecko · CoinMarketCap · TradingView · X/Twitter · LinkedIn · YC · HN → enrich → generate → send</div>
             </div>
 
             {/* SOURCE SELECTOR */}
@@ -1204,11 +1222,15 @@ export default function App(){
                 <span style={{fontFamily:'var(--mono)',fontSize:9,color:'var(--ink4)',textTransform:'uppercase',letterSpacing:'1px',flexShrink:0}}>Source</span>
                 <div style={{display:'flex',gap:6,flex:1,flexWrap:'wrap'}}>
                   {([
-                    {id:'github',      label:'GitHub',        icon:'⚡', desc:'Crypto/trading orgs via search · stars · open source signal'},
-                    {id:'yc',          label:'YC + Show HN',  icon:'🚀', desc:'YC-backed crypto/DeFi startups + HN launches'},
-                    {id:'hackernews',  label:'Hacker News',   icon:'🗞',  desc:"Who's Hiring threads · AI teams recruiting"},
-                    {id:'linkedin',    label:'LinkedIn',       icon:'💼', desc:'Crypto/trading company search via Proxycurl'},
-                  ] as {id:'github'|'yc'|'hackernews'|'linkedin',label:string,icon:string,desc:string}[]).map(s=>(
+                    {id:'github',        label:'GitHub',          icon:'⚡', desc:'Crypto/trading orgs · stars · open source'},
+                    {id:'coingecko',     label:'CoinGecko',       icon:'🦎', desc:'Trending coins · top gainers · DeFi protocols'},
+                    {id:'coinmarketcap', label:'CoinMarketCap',   icon:'📊', desc:'Trending · new listings · top gainers'},
+                    {id:'tradingview',   label:'TradingView',     icon:'📈', desc:'Popular analysts · idea publishers'},
+                    {id:'x',            label:'X / Twitter',      icon:'𝕏',  desc:'Crypto KOLs · trading influencers'},
+                    {id:'linkedin',      label:'LinkedIn',         icon:'💼', desc:'Crypto/trading companies · Proxycurl'},
+                    {id:'yc',            label:'YC + Show HN',    icon:'🚀', desc:'YC-backed crypto/DeFi startups'},
+                    {id:'hackernews',    label:'Hacker News',     icon:'🗞',  desc:'Crypto/trading hiring threads'},
+                  ] as {id:'github'|'yc'|'hackernews'|'linkedin'|'coingecko'|'coinmarketcap'|'tradingview'|'x',label:string,icon:string,desc:string}[]).map(s=>(
                     <button key={s.id}
                       onClick={()=>{setScrapeSource(s.id);setDiscovered([]);setScrSt({});setScraped({})}}
                       style={{
@@ -1239,6 +1261,14 @@ export default function App(){
                     style={{color:'var(--yellow)'}}>nubela.co/proxycurl</a> — 10 free credits on signup
                 </div>
               )}
+              {scrapeSource==='coinmarketcap'&&(
+                <div style={{marginBottom:12,padding:'10px 14px',background:'#d9770610',borderRadius:'var(--r)',
+                  border:'1px solid #d9770630',fontFamily:'var(--mono)',fontSize:11,color:'var(--yellow)'}}>
+                  ⚠ Requires <code style={{background:'var(--s3)',padding:'1px 5px',borderRadius:3}}>CMC_API_KEY</code> in Vercel env vars ·{' '}
+                  <a href="https://coinmarketcap.com/api" target="_blank" rel="noopener noreferrer"
+                    style={{color:'var(--yellow)'}}>coinmarketcap.com/api</a> — free tier: 10,000 calls/month
+                </div>
+              )}
 
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',flexWrap:'wrap',gap:10}}>
                 <span style={{fontFamily:'var(--body)',fontSize:11,color:'var(--ink3)'}}>
@@ -1246,14 +1276,14 @@ export default function App(){
                   {scrapeSource==='yc'&&'YC Companies API · recent batches (W25/S24/W23) · Show HN launches'}
                   {scrapeSource==='hackernews'&&"Parses latest Who's Hiring threads via HN Algolia API"}
                   {scrapeSource==='linkedin'&&'Searches LinkedIn companies via Proxycurl · $0.01/lookup'}
+                  {scrapeSource==='coingecko'&&'CoinGecko free API · trending coins · top gainers · DeFi category · 30 req/min'}
+                  {scrapeSource==='coinmarketcap'&&'CMC Pro API · trending · new listings · gainers · requires CMC_API_KEY'}
+                  {scrapeSource==='tradingview'&&'TradingView public data · popular analysts · idea publishers · BTC/ETH/SOL'}
+                  {scrapeSource==='x'&&'X/Twitter crypto KOLs · trading influencers · curated + discovered'}
                 </span>
                 <div className="btn-row">
                   <button className="btn btn-dark" onClick={discoverOrgs} disabled={discovering}>
-                    {discovering?'Searching...':`🔍 Discover from ${
-                      scrapeSource==='github'?'GitHub':
-                      scrapeSource==='yc'?'YC + Show HN':
-                      scrapeSource==='hackernews'?'Hacker News':'LinkedIn'
-                    }`}
+                    {discovering?'Searching...':`🔍 Discover from ${sourceLabels[scrapeSource] || scrapeSource}`}
                   </button>
                   <button className="btn btn-dark" onClick={scrapeAll}
                     disabled={Object.values(scrSt).some(s=>s==='running')||!discovered.length}>
@@ -1374,7 +1404,7 @@ export default function App(){
                       <div style={{marginTop:8,padding:'8px 12px',background:'var(--s2)',borderRadius:'var(--r)',
                         fontFamily:'var(--body)',fontSize:11,color:'var(--ink3)'}}>
                         💡 Topics control which GitHub queries run, which YC company tags are searched,
-                        which HN keywords match, and which LinkedIn searches fire.
+                        which search queries match across all 8 sources.
                         Select none to search everything.
                       </div>
                     </div>
@@ -1465,7 +1495,7 @@ export default function App(){
                 <div className="card">
                   <div className="card-hd">
                     <div className="ct">
-                      {scrapeSource==='github'?'GitHub Orgs':scrapeSource==='yc'?'YC Companies + Show HN':scrapeSource==='hackernews'?'HN Hiring Posts':'LinkedIn Companies'}
+                      {sourceLabels[scrapeSource] || scrapeSource}
                       {discovered.length>0&&<span style={{color:'var(--green)',fontSize:11,fontWeight:400,marginLeft:8}}>
                         {filtered.length} of {discovered.length}
                       </span>}
@@ -1475,9 +1505,7 @@ export default function App(){
                     <div style={{padding:'40px 0',textAlign:'center',color:'var(--ink3)',fontFamily:'var(--mono)',fontSize:12}}>
                       <div style={{marginBottom:12}}>
                         {scrapeSource==='github'&&'Searching GitHub across up to 15 queries...'}
-                        {scrapeSource==='yc'&&'Searching YC Companies + Show HN...'}
-                        {scrapeSource==='hackernews'&&"Scanning Hacker News Who's Hiring threads..."}
-                        {scrapeSource==='linkedin'&&'Searching LinkedIn via Proxycurl...'}
+                        {scrapeSource!=='github'&&`Searching ${sourceLabels[scrapeSource] || scrapeSource}...`}
                       </div>
                     </div>
                   )}
@@ -1488,9 +1516,9 @@ export default function App(){
                       </div>
                       <div className="empty-t">
                         {scrapeSource==='github'&&'Click Discover to find AI orgs on GitHub'}
-                        {scrapeSource==='yc'&&'YC-backed startups · recent batches W25/S24/W23 · Show HN launches'}
+                        
                         {scrapeSource==='hackernews'&&"Click Discover to scan HN Who's Hiring threads"}
-                        {scrapeSource==='linkedin'&&'Click Discover to search LinkedIn companies via Proxycurl'}
+                        
                       </div>
                       <div className="empty-s">
                         {scrapeSource==='github'&&'15 rotating search queries · deduped vs your CRM · enriches org members + emails'}
