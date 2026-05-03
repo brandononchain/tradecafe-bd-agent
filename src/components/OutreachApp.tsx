@@ -426,7 +426,7 @@ export default function App(){
   const[filterSortBy,setFilterSortBy]=useState<'stars'|'forks'|'members'|'score'|'watchers'>('score')
   const[filterShowHasEmail,setFilterShowHasEmail]=useState(false)
   // Topic/niche filter — drives what gets discovered AND filters results
-  const[activeTopics,setActiveTopics]=useState<Set<string>>(new Set(['ai-agents','llm-infra','dev-tools']))
+  const[activeTopics,setActiveTopics]=useState<Set<string>>(new Set(['crypto-traders','algo-trading','ai-trading','defi-protocols','crypto-kols']))
   const[activeCompanyTypes,setActiveCompanyTypes]=useState<Set<string>>(new Set())
   const[activeCompanySizes,setActiveCompanySizes]=useState<Set<string>>(new Set())
   const[showTopicPanel,setShowTopicPanel]=useState(false)
@@ -1195,7 +1195,7 @@ export default function App(){
           {tab==='scrape'&&<>
             <div className="ph">
               <div className="ph-t">Lead Discovery</div>
-              <div className="ph-s">Multi-source lead gen · GitHub · YC Companies · Hacker News · LinkedIn · same enrich → generate → send flow</div>
+              <div className="ph-s">Multi-source lead gen · GitHub · YC · HN · LinkedIn · discover crypto traders, KOLs, DeFi builders → enrich → generate → send</div>
             </div>
 
             {/* SOURCE SELECTOR */}
@@ -1204,10 +1204,10 @@ export default function App(){
                 <span style={{fontFamily:'var(--mono)',fontSize:9,color:'var(--ink4)',textTransform:'uppercase',letterSpacing:'1px',flexShrink:0}}>Source</span>
                 <div style={{display:'flex',gap:6,flex:1,flexWrap:'wrap'}}>
                   {([
-                    {id:'github',      label:'GitHub',        icon:'⚡', desc:'AI orgs via search · stars · open source signal'},
-                    {id:'yc',          label:'YC + Show HN',  icon:'🚀', desc:'YC-backed startups + HN launches · verified companies'},
+                    {id:'github',      label:'GitHub',        icon:'⚡', desc:'Crypto/trading orgs via search · stars · open source signal'},
+                    {id:'yc',          label:'YC + Show HN',  icon:'🚀', desc:'YC-backed crypto/DeFi startups + HN launches'},
                     {id:'hackernews',  label:'Hacker News',   icon:'🗞',  desc:"Who's Hiring threads · AI teams recruiting"},
-                    {id:'linkedin',    label:'LinkedIn',       icon:'💼', desc:'Company search via Proxycurl API'},
+                    {id:'linkedin',    label:'LinkedIn',       icon:'💼', desc:'Crypto/trading company search via Proxycurl'},
                   ] as {id:'github'|'yc'|'hackernews'|'linkedin',label:string,icon:string,desc:string}[]).map(s=>(
                     <button key={s.id}
                       onClick={()=>{setScrapeSource(s.id);setDiscovered([]);setScrSt({});setScraped({})}}
@@ -1268,50 +1268,31 @@ export default function App(){
             {/* TOPIC / NICHE FILTER PANEL */}
             {(()=>{
               const TOPIC_DEFS = [
-                // AI Infrastructure
-                {id:'ai-agents',    label:'AI Agents',         emoji:'🤖', cat:'AI Infrastructure',  desc:'Agent frameworks, multi-agent, runtimes'},
-                {id:'llm-infra',    label:'LLM Infra',         emoji:'⚡', cat:'AI Infrastructure',  desc:'Model serving, inference, LLMOps'},
-                {id:'vector-db',    label:'Vector & RAG',      emoji:'🔍', cat:'AI Infrastructure',  desc:'Vector DBs, embeddings, RAG pipelines'},
-                {id:'ai-memory',    label:'AI Memory',         emoji:'🧠', cat:'AI Infrastructure',  desc:'Persistent memory, knowledge graphs'},
-                {id:'mcp-tools',    label:'MCP & Tools',       emoji:'🔧', cat:'AI Infrastructure',  desc:'MCP servers, tool use, function calling'},
-                // Developer Tools
-                {id:'ai-code',      label:'AI Coding',         emoji:'💻', cat:'Developer Tools',    desc:'Code assistants, copilots, code gen'},
-                {id:'dev-ops-ai',   label:'AI DevOps',         emoji:'🚀', cat:'Developer Tools',    desc:'CI/CD automation, infra intelligence'},
-                {id:'observability',label:'Observability',     emoji:'📊', cat:'Developer Tools',    desc:'LLM monitoring, eval, guardrails'},
-                {id:'ai-testing',   label:'AI Testing',        emoji:'🧪', cat:'Developer Tools',    desc:'Automated QA, test generation'},
-                // Applied AI
-                {id:'ai-data',      label:'AI + Data',         emoji:'📈', cat:'Applied AI',         desc:'AI analytics, ML data pipelines'},
-                {id:'ai-workflows', label:'AI Workflows',      emoji:'⚙️', cat:'Applied AI',         desc:'Workflow automation, no-code AI'},
-                {id:'ai-search',    label:'AI Search',         emoji:'🔎', cat:'Applied AI',         desc:'Enterprise search, knowledge bases'},
-                {id:'voice-ai',     label:'Voice AI',          emoji:'🎙️', cat:'Applied AI',         desc:'Speech, TTS, conversational agents'},
-                {id:'ai-robotics',  label:'AI Robotics',       emoji:'🦾', cat:'Applied AI',         desc:'Robotics software, embodied AI'},
-                // Fintech
-                {id:'fintech-ai',   label:'AI Fintech',        emoji:'💳', cat:'Fintech',            desc:'AI for banking, payments, lending'},
-                {id:'trading-ai',   label:'Trading & Quant',   emoji:'📉', cat:'Fintech',            desc:'Algorithmic trading, quant finance AI'},
-                {id:'fraud-compliance',label:'Fraud & Compliance',emoji:'🛡️',cat:'Fintech',          desc:'Fraud detection, AML, KYC, compliance'},
-                {id:'insurance-ai', label:'Insurtech AI',      emoji:'📋', cat:'Fintech',            desc:'Underwriting automation, claims AI'},
-                // Crypto & Web3
-                {id:'crypto-ai',    label:'Crypto × AI',      emoji:'🔗', cat:'Crypto & Web3',      desc:'AI agents on-chain, blockchain intelligence'},
-                {id:'defi',         label:'DeFi & Protocol',   emoji:'⛓️', cat:'Crypto & Web3',      desc:'DeFi protocols, DEX, stablecoins'},
-                {id:'web3-infra',   label:'Web3 Infrastructure',emoji:'🌐',cat:'Crypto & Web3',      desc:'Blockchain infra, node services, wallets'},
-                // eCommerce
-                {id:'ecomm-ai',     label:'eCommerce AI',      emoji:'🛍️', cat:'eCommerce',          desc:'AI for retail, recommendations'},
-                {id:'supply-chain-ai',label:'Supply Chain AI', emoji:'📦', cat:'eCommerce',          desc:'Logistics AI, inventory forecasting'},
-                // Healthcare
-                {id:'ai-health',    label:'AI Healthcare',     emoji:'🏥', cat:'Healthcare',         desc:'Medical AI, clinical decision support'},
-                {id:'biotech-ai',   label:'BioTech AI',        emoji:'🧬', cat:'Healthcare',         desc:'Drug discovery, genomics, protein AI'},
-                {id:'mental-health-ai',label:'Mental Health AI',emoji:'💚',cat:'Healthcare',         desc:'AI therapy tools, wellness platforms'},
-                // Enterprise SaaS
-                {id:'sales-ai',     label:'Sales AI',          emoji:'💬', cat:'Enterprise SaaS',    desc:'Sales automation, CRM intelligence'},
-                {id:'hr-ai',        label:'HR & Recruiting AI',emoji:'👥', cat:'Enterprise SaaS',    desc:'AI recruiting, talent intelligence'},
-                {id:'legal-ai',     label:'Legal AI',          emoji:'⚖️', cat:'Enterprise SaaS',    desc:'Contract analysis, legal research'},
-                {id:'marketing-ai', label:'Marketing AI',      emoji:'📣', cat:'Enterprise SaaS',    desc:'AI content, ad optimization, growth'},
-                {id:'customer-support-ai',label:'Support AI',  emoji:'🎧', cat:'Enterprise SaaS',    desc:'AI customer service, helpdesk automation'},
-                // Security
-                {id:'ai-security',  label:'AI Security',       emoji:'🔐', cat:'Security',           desc:'Threat detection, SOC automation'},
-                {id:'privacy-ai',   label:'Privacy AI',        emoji:'🔒', cat:'Security',           desc:'Privacy-preserving AI, synthetic data'},
-                // Education
-                {id:'edtech-ai',    label:'EdTech AI',         emoji:'📚', cat:'Education',          desc:'AI tutoring, personalized learning'},
+                // Crypto Trading
+                {id:'crypto-traders', label:'Crypto Traders',    emoji:'📊', cat:'Crypto Trading',     desc:'Active traders, TA analysts, signal providers'},
+                {id:'algo-trading',   label:'Algo & Quant',      emoji:'🤖', cat:'Crypto Trading',     desc:'Algorithmic trading, quant strategies, bots'},
+                {id:'trading-tools',  label:'Trading Tools',     emoji:'🔧', cat:'Crypto Trading',     desc:'Charting, analytics, portfolio trackers'},
+                {id:'ai-trading',     label:'AI Trading',        emoji:'🧠', cat:'Crypto Trading',     desc:'AI/ML signals, prediction, sentiment'},
+                // DeFi & Web3
+                {id:'defi-protocols', label:'DeFi Protocols',    emoji:'⛓️', cat:'DeFi & Web3',        desc:'DEXs, lending, yield, staking'},
+                {id:'web3-wallets',   label:'Wallets & Infra',   emoji:'💼', cat:'DeFi & Web3',        desc:'Wallet SDKs, bridges, chain infra'},
+                {id:'onchain-analytics',label:'On-Chain Analytics',emoji:'📈',cat:'DeFi & Web3',       desc:'Blockchain data, whale tracking'},
+                {id:'nft-gaming',     label:'NFT & Gaming',      emoji:'🎮', cat:'DeFi & Web3',        desc:'NFT platforms, GameFi, play-to-earn'},
+                // Forex & TradFi
+                {id:'forex-trading',  label:'Forex Trading',     emoji:'💱', cat:'Forex & TradFi',     desc:'Forex brokers, prop firms, signals'},
+                {id:'prop-firms',     label:'Prop Firms',        emoji:'🏦', cat:'Forex & TradFi',     desc:'Proprietary trading, funded programs'},
+                {id:'fintech-payments',label:'Payments & Fintech',emoji:'💳',cat:'Forex & TradFi',     desc:'Crypto payments, neobanks, gateways'},
+                // KOL & Influencer
+                {id:'crypto-kols',    label:'Crypto KOLs',       emoji:'🎤', cat:'KOL & Influencer',   desc:'Crypto influencers, CT personalities'},
+                {id:'trading-communities',label:'Trading Communities',emoji:'👥',cat:'KOL & Influencer',desc:'Discord/TG trading groups, signals'},
+                {id:'content-creators',label:'Finance Creators', emoji:'📹', cat:'KOL & Influencer',   desc:'Finance YouTubers, TikTokers, podcasts'},
+                // Network Marketing
+                {id:'mlm-networks',   label:'MLM Networks',      emoji:'🕸️', cat:'Network Marketing',  desc:'Network marketing, referral systems'},
+                {id:'affiliate-marketing',label:'Affiliate Marketing',emoji:'🔗',cat:'Network Marketing',desc:'Affiliate platforms, commission tracking'},
+                // Blockchain
+                {id:'smart-contracts',label:'Smart Contracts',   emoji:'📝', cat:'Blockchain',          desc:'Solidity devs, auditors, EVM tooling'},
+                {id:'l2-scaling',     label:'L2 & Scaling',      emoji:'🚀', cat:'Blockchain',          desc:'L2 rollups, sidechains, bridges'},
+                {id:'dao-governance', label:'DAO & Governance',  emoji:'🏛️', cat:'Blockchain',          desc:'DAO tooling, governance, treasury'},
               ]
                             const cats = Array.from(new Set(TOPIC_DEFS.map((t:any)=>t.cat)))
               const toggleTopic = (id:string) => {
@@ -2017,7 +1998,7 @@ export default function App(){
           {tab==='send'&&<>
             <div className="ph">
               <div className="ph-t">Send Campaign</div>
-              <div className="ph-s">Warmup-aware sending · auto-enforces daily limits · Gmail API · all sends logged to Airtable</div>
+              <div className="ph-s">Warmup-aware sending · auto-enforces daily limits · Gmail API via OAuth2 · all sends logged to Airtable</div>
             </div>
 
             {/* STEP 1 — PROVIDER */}
