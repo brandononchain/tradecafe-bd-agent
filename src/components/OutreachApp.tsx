@@ -557,7 +557,31 @@ export default function App(){
     setDiscovering(false)
   }
 
-  const scrapeOne = async (tgt: {org: string; name: string; type: string; website?: string; source?: string}) => {
+  const scrapeOne = async (tgt: {org: string; name: string; type: string; website?: string; source?: string; description?: string; score?: number; url?: string; followers?: number; symbol?: string; marketCap?: number; priceChange24h?: number}) => {
+    // For non-GitHub sources, skip GitHub enrichment — use discovery data directly
+    const isGitHub = scrapeSource === 'github'
+    if (!isGitHub) {
+      setScrSt(p => ({...p, [tgt.org]: 'done'}))
+      setScraped(p => ({...p, [tgt.org]: {
+        company: tgt.name || tgt.org,
+        name: tgt.name || tgt.org,
+        companyType: tgt.type || '',
+        website: tgt.website || tgt.url || '',
+        url: tgt.url || tgt.website || '',
+        description: tgt.description || '',
+        leadScore: tgt.score || 50,
+        score: tgt.score || 50,
+        source: tgt.source || scrapeSource,
+        followers: tgt.followers || 0,
+        symbol: tgt.symbol || '',
+        marketCap: tgt.marketCap || 0,
+        priceChange24h: tgt.priceChange24h || 0,
+        org: tgt.org,
+      }}))
+      addLog(`  ✓ ${tgt.name || tgt.org} — ${tgt.type || scrapeSource}`, 'o')
+      return
+    }
+    // GitHub enrichment flow
     setScrSt(p => ({...p, [tgt.org]: 'running'}))
     try {
       const websiteParam = tgt.website ? `&website=${encodeURIComponent(tgt.website)}` : ''
@@ -577,12 +601,14 @@ export default function App(){
 
   const scrapeAll = async () => {
     const targets = searchMode === 'discover' && discovered.length > 0
-      ? discovered.map(o => ({ org: o.org, name: o.name, type: o.type, website: o.website }))
-      : TARGETS
+      ? discovered.map(o => ({ org: o.org, name: o.name, type: o.type, website: o.website, source: o.source, description: o.description, score: o.score, url: o.url, followers: o.followers, symbol: o.symbol, marketCap: o.marketCap, priceChange24h: o.priceChange24h }))
+      : TARGETS.map(t => ({ ...t, source: 'github' }))
     const srcLabel = sourceLabels[scrapeSource] || scrapeSource
     addLog(`=== Enriching ${targets.length} leads from ${srcLabel} ===`, 'i')
-    const rl = await fetch('/api/scrape?org=ratelimit').then(r=>r.json()).catch(()=>null)
-    if (rl?.ok) addLog(`GitHub: ${rl.remaining}/${rl.limit} req remaining`, rl.remaining<40?'w':'i')
+    if (scrapeSource === 'github') {
+      const rl = await fetch('/api/scrape?org=ratelimit').then(r=>r.json()).catch(()=>null)
+      if (rl?.ok) addLog(`GitHub: ${rl.remaining}/${rl.limit} req remaining`, rl.remaining<40?'w':'i')
+    }
     for (const tgt of targets) {
       if (scrSt[tgt.org] === 'done') continue
       await scrapeOne(tgt)
@@ -593,62 +619,72 @@ export default function App(){
   }
 
   const saveToAirtable=async()=>{
-    const toSave=Object.values(scraped)
-    if(!toSave.length){toast('Nothing scraped yet','w');return}
-    addLog(`Saving ${toSave.length} leads with contact enrichment...`,'i')
+    // Save from either scraped (enriched) or discovered (raw) data
+    const enrichedList=Object.values(scraped)
+    const rawList=discovered.filter(o=>!scraped[o.org])
+    const toSave=[...enrichedList.map(d=>({...d,_enriched:true})),...rawList.map(d=>({...d,_enriched:false}))]
+    if(!toSave.length){toast('Nothing to save — discover or enrich leads first','w');return}
+    addLog(`Saving ${toSave.length} leads to CRM...`,'i')
     let ok=0
     for(const d of toSave){
       try{
         const fields: Record<string,any> = {
-          "Company":          d.company,
-          "Website":          d.website||'',
-          "GitHub Org URL":   d.githubOrgUrl,
-          "GitHub Stars":     d.githubStars||0,
-          "GitHub Forks":     d.githubForks||0,
-          "GitHub Watchers":  d.githubWatchers||0,
-          "Org Members":      d.orgMembers||0,
-          "Top Repo Contributors": d.contributors||0,
-          "Open Issues":      d.openIssues||0,
-          "Repo Count":       d.repoCount||0,
-          "Top Repos":        d.topRepos||'',
-          "Lead Score":       d.leadScore||0,
-          "Company Type":     d.companyType,
-          "AI Tools Used":    d.aiTools,
-          "Status":           'New',
-          "Sequence Status":  'Cold',
-          "Source":           sourceLabels[scrapeSource] || scrapeSource,
-          "Date Added":       new Date().toISOString().split('T')[0],
-          "Personalization Notes": d.description||'',
+          "Name":               d.contactName || d.name || d.company || d.org || '',
+          "Company":            d.company || d.name || d.org || '',
+          "Contact Name":       d.contactName || '',
+          "Contact Email":      d.contactEmail || '',
+          "Company Type":       d.companyType || d.type || '',
+          "Website":            d.website || d.url || '',
+          "Lead Score":         d.leadScore || d.score || 0,
+          "Status":             'New',
+          "Sequence Status":    'Cold',
+          "Source":             d.source || sourceLabels[scrapeSource] || scrapeSource,
+          "Personalization Notes": d.description || d.desc || '',
+          "Notes":              [
+            d.description || d.desc || '',
+            d.symbol ? `Symbol: ${d.symbol}` : '',
+            d.marketCap ? `MCap: $${(d.marketCap/1e6).toFixed(0)}M` : '',
+            d.priceChange24h ? `24h: ${d.priceChange24h > 0 ? '+' : ''}${d.priceChange24h.toFixed(1)}%` : '',
+            d.topRepos || '',
+            d.aiTools || '',
+          ].filter(Boolean).join('\n'),
         }
+        // GitHub-specific fields (only if enriched from GitHub)
+        if(d._enriched && d.githubOrgUrl) {
+          fields['GitHub Org URL'] = d.githubOrgUrl
+          fields['GitHub Stars']   = d.githubStars || 0
+        }
+        // Contact fields
         if(d.contactName)  fields['Contact Name']  = d.contactName
         if(d.contactEmail) fields['Contact Email'] = d.contactEmail
-        if(d.contactTitle) fields['Job Title'] = d.contactTitle + (d.contactConfidence==='inferred'?' (inferred)':' (verified)')
+        if(d.contactTitle) fields['Job Title'] = d.contactTitle
+        // Platform handle (X, TradingView, etc)
+        if(d.url) {
+          if(d.source==='x'||d.source==='twitter') fields['X/Twitter URL'] = d.url
+          else if(d.source==='linkedin') fields['LinkedIn URL'] = d.url
+          else fields['Website'] = d.url
+        }
+        if(d.followers) fields['Followers/Audience Size'] = d.followers
         if(d.contactConfidence){
           const confMap: Record<string,string> = {
-            'verified':    'GitHub public',
-            'inferred':    'Pattern inferred',
-            'org-contact': 'Org contact',
+            'verified':'GitHub public','inferred':'Pattern inferred','org-contact':'Org contact',
           }
           const hunterConf = typeof d.contactConfidence==='string'&&d.contactConfidence.startsWith('hunter-')
-          fields['Email Confidence'] = hunterConf ? 'Hunter verified' : (confMap[d.contactConfidence]||'Unknown')
+          fields['Email Confidence'] = hunterConf ? 'Hunter verified' : (confMap[d.contactConfidence]||'Org contact')
         }
 
         const r=await fetch('/api/airtable',{method:'POST',headers:{'Content-Type':'application/json'},
           body:JSON.stringify({action:'create',fields})}).then(r=>r.json())
         if(r.ok){
           ok++
-          const emailNote = d.contactEmail
-            ? ` · ${d.contactConfidence==='verified'?'✓':'~'} ${d.contactEmail}`
-            : ' · no email found'
-          addLog(`  ✓ ${d.company}${emailNote}`,'o')
-        }
-        else addLog(`  ✗ ${d.company}: ${r.error}`,'e')
-      }catch(e:any){addLog(`  ✗ ${e.message}`,'e')}
+          const label = d.contactEmail ? `${d.name||d.company} (${d.contactEmail})` : (d.name||d.company||d.org)
+          addLog(`  ✓ ${label}`,'o')
+        } else throw new Error(r.error)
+      }catch(e:any){addLog(`  ✗ ${d.name||d.company||d.org}: ${e.message}`,'e')}
       await new Promise(r=>setTimeout(r,200))
     }
-    const withEmail = Object.values(scraped).filter((d:any)=>d.contactEmail).length
-    addLog(`Saved ${ok}/${toSave.length} — ${withEmail} with emails (${Object.values(scraped).filter((d:any)=>d.contactConfidence==='verified').length} verified, ${Object.values(scraped).filter((d:any)=>d.contactConfidence==='inferred').length} inferred)`,ok===toSave.length?'o':'w')
-    toast(`${ok} leads saved · ${withEmail} emails found`,ok>0?'o':'e')
+    addLog(`Saved ${ok}/${toSave.length} leads to CRM`,ok===toSave.length?'o':'w')
+    toast(`${ok} leads saved to CRM`,ok>0?'o':'e')
     await loadLeads(true)
   }
 
@@ -863,6 +899,7 @@ export default function App(){
     booked:leads.filter(l=>l.status==='Booked Call').length,
   }
   const scCnt=Object.values(scrSt).filter(s=>s==='done').length
+  const saveCnt=scCnt + (discovered.length > 0 && scCnt === 0 ? discovered.length : 0)
   const readyCnt=leads.filter(l=>l.emailBody&&l.emailSubject&&l.contactEmail&&l.status==='New').length
 
   const hSt=(h:any)=>!h?'unknown':h.ok?'ok':'err'
@@ -1289,7 +1326,7 @@ export default function App(){
                     disabled={Object.values(scrSt).some(s=>s==='running')||!discovered.length}>
                     Enrich All
                   </button>
-                  <button className="btn btn-red" onClick={saveToAirtable} disabled={!scCnt}>↑ Save {scCnt} to CRM</button>
+                  <button className="btn btn-red" onClick={saveToAirtable} disabled={!saveCnt}>↑ Save {saveCnt || discovered.length} to CRM</button>
                   <button className="btn btn-ghost btn-sm" onClick={()=>loadLeads()}>↻ Reload</button>
                 </div>
               </div>
