@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { buildTopicTags } from '@/lib/topics'
+import { buildYCTags } from '@/lib/topics'
 
 // Y Combinator Companies API — fully public, no auth needed
 // Perfect ICP: funded AI startups, active teams, verified websites
@@ -35,7 +35,7 @@ export async function GET(req: NextRequest) {
   const sp        = new URL(req.url).searchParams
   const topicsParam = sp.get('topics') || ''
   const topicIds    = topicsParam ? topicsParam.split(',').filter(Boolean) : []
-  const topicTags   = buildTopicTags(topicIds)
+  const topicTags   = buildYCTags(topicIds)
 
   try {
     // Load CRM to dedupe
