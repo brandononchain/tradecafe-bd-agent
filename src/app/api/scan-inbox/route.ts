@@ -73,7 +73,8 @@ export async function POST(req: NextRequest) {
       let matchedEmail = contactEmails.has(fromEmail) ? fromEmail : null
       if (!matchedEmail) {
         // Domain fuzzy match
-        for (const ce of contactEmails) {
+        const ceArray = Array.from(contactEmails)
+        for (const ce of ceArray) {
           if (ce.split('@')[1] === fromDomain) { matchedEmail = ce; break }
         }
       }
