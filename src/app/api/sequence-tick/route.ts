@@ -113,7 +113,8 @@ export async function GET(req: NextRequest) {
         // Match reply to CRM lead
         let matchedEmail = activeLookup.has(fromEmail) ? fromEmail : null
         if (!matchedEmail) {
-          for (const [ce] of activeLookup) {
+          const keys = Array.from(activeLookup.keys())
+          for (const ce of keys) {
             if (ce.split('@')[1] === fromDomain) { matchedEmail = ce; break }
           }
         }
