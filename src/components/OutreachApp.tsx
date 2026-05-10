@@ -230,12 +230,16 @@ export default function OutreachApp() {
         showToast(`Found email for ${lead.company}`, 'ok')
         await loadLeads()
       } else if (data.ok && data.website) {
-        log(`⚡ Found website for ${lead.company} but no email — try Apollo with APOLLO_API_KEY`, 'w')
-        showToast('Found website but no email — set APOLLO_API_KEY in Vercel env', 'warn')
+        log(`⚡ Found website (${data.website}) for ${lead.company} but no email`, 'w')
+        showToast(data.apolloConfigured
+          ? 'Found website but no email in Apollo — KOL may not have public email'
+          : 'Found website but no email — set APOLLO_API_KEY in Vercel env', 'warn')
         await loadLeads()
       } else {
         log(`✗ No email found for ${lead.company} (${data.totalFound || 0} sources checked)`, 'w')
-        showToast('No email found — KOL may not have public email', 'warn')
+        showToast(data.apolloConfigured
+          ? 'No email found — KOL may not have public email'
+          : 'No email found — set APOLLO_API_KEY for better results', 'warn')
       }
     } catch (e: any) { log(`Enrich error: ${e.message}`, 'e') }
     setEnriching(null)

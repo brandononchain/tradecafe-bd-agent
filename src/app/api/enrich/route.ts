@@ -150,7 +150,7 @@ async function apolloLookup(opts: {
     }
 
     // Need at least one identifying field
-    if (!params.email && !params.linkedin_url && !params.domain && !params.first_name) return {}
+    if (!params.email && !params.linkedin_url && !params.domain && !params.first_name && !params.name && !params.organization_name) return {}
 
     const qs = new URLSearchParams(params).toString()
     const r = await fetch(`https://api.apollo.io/api/v1/people/match?${qs}`, {
@@ -344,6 +344,7 @@ export async function POST(req: NextRequest) {
       website: foundWebsite || null,
       allResults: unique,
       totalFound: unique.length,
+      apolloConfigured: !!process.env.APOLLO_API_KEY,
     })
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e.message }, { status: 500 })
