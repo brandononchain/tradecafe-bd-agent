@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { sendDiscordNotification, TEST_PAYLOAD, type NotifyPayload } from '@/lib/discord'
+import { sendDiscordNotification } from '@/lib/discord'
 
-// POST — called by other routes or external services
 export async function POST(req: NextRequest) {
-  const payload = await req.json() as NotifyPayload
-  const ok = await sendDiscordNotification(payload)
-  return NextResponse.json({ ok })
+  const { message } = await req.json()
+  await sendDiscordNotification(message || 'BD Agent notification')
+  return NextResponse.json({ ok: true })
 }
 
-// GET — sends a test notification to verify the webhook is working
 export async function GET() {
-  const ok = await sendDiscordNotification(TEST_PAYLOAD)
+  await sendDiscordNotification('TradeCafe BD Agent — test notification ✓')
   return NextResponse.json({
-    ok,
-    message: ok
+    ok: !!process.env.DISCORD_WEBHOOK_URL,
+    message: process.env.DISCORD_WEBHOOK_URL
       ? 'Test notification sent to Discord ✓'
-      : 'DISCORD_WEBHOOK_URL not configured — add it in Vercel env vars',
+      : 'DISCORD_WEBHOOK_URL not configured',
   })
 }

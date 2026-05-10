@@ -1,155 +1,273 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// ── helpers ───────────────────────────────────────────────────────────────────
+// Multi-source email enrichment pipeline
+// Priority: 1) Hunter.io domain search  2) Website scrape  3) GitHub profile  4) Pattern inference
 
-const GH_HEADERS = () => {
-  const h: Record<string, string> = { Accept: 'application/vnd.github+json' }
-  if (process.env.GITHUB_TOKEN) h.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
-  return h
+const AT_BASE = 'appCYgmFc8vTfwyv1'
+const AT_TABLE = 'tblAsQXKEK9chUaT6'
+
+// ── Email extraction from raw text ──────────────────────────────────────────
+function extractEmails(text: string): string[] {
+  const raw = text.match(/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/g) || []
+  const blocked = /noreply|no-reply|mailer-daemon|postmaster|abuse@|spam@|unsubscribe|donotreply|support@|info@|hello@|contact@/i
+  return Array.from(new Set(raw.filter(e => !blocked.test(e) && !e.endsWith('.png') && !e.endsWith('.jpg'))))
 }
 
-async function ghGet(path: string) {
-  const r = await fetch(`https://api.github.com${path}`, { headers: GH_HEADERS() })
-  if (!r.ok) return null
-  return r.json()
+// ── Website scrape for emails ───────────────────────────────────────────────
+async function scrapeWebsite(url: string): Promise<{ emails: string[]; error?: string }> {
+  if (!url) return { emails: [] }
+  try {
+    const target = url.startsWith('http') ? url : `https://${url}`
+    // Try main page + common contact pages
+    const pages = [target, `${target}/contact`, `${target}/about`, `${target}/team`]
+    const allEmails: string[] = []
+
+    for (const page of pages) {
+      try {
+        const r = await fetch(page, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TradeCafeBD/1.0)' },
+          signal: AbortSignal.timeout(6000),
+          redirect: 'follow',
+        })
+        if (!r.ok) continue
+        const html = await r.text()
+        // Extract emails from HTML (including mailto: links)
+        const mailtos = html.match(/mailto:([a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,})/g) || []
+        const fromMailto = mailtos.map(m => m.replace('mailto:', ''))
+        allEmails.push(...fromMailto, ...extractEmails(html))
+      } catch {}
+    }
+
+    return { emails: [...new Set(allEmails)] }
+  } catch (e: any) {
+    return { emails: [], error: e.message }
+  }
 }
 
-// Common b2b email patterns to try
-function emailPatterns(first: string, last: string, domain: string): { email: string; pattern: string }[] {
-  const f = first.toLowerCase().replace(/[^a-z]/g, '')
-  const l = last.toLowerCase().replace(/[^a-z]/g, '')
-  if (!f || !l || !domain) return []
-  return [
-    { email: `${f}@${domain}`,           pattern: 'first@domain' },
-    { email: `${f}.${l}@${domain}`,       pattern: 'first.last@domain' },
-    { email: `${f}${l}@${domain}`,        pattern: 'firstlast@domain' },
-    { email: `${f[0]}${l}@${domain}`,     pattern: 'flast@domain' },
-    { email: `${f[0]}.${l}@${domain}`,    pattern: 'f.last@domain' },
-    { email: `${f}_${l}@${domain}`,       pattern: 'first_last@domain' },
-  ]
+// ── X/Twitter bio scrape ────────────────────────────────────────────────────
+async function scrapeXBio(handle: string): Promise<{ emails: string[]; website?: string; bio?: string }> {
+  if (!handle) return { emails: [] }
+  const clean = handle.replace('@', '').replace('https://x.com/', '').replace('https://twitter.com/', '')
+  try {
+    // Use nitter instances or public profile page
+    const urls = [
+      `https://nitter.net/${clean}`,
+      `https://nitter.privacydev.net/${clean}`,
+    ]
+    for (const url of urls) {
+      try {
+        const r = await fetch(url, {
+          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TradeCafeBD/1.0)' },
+          signal: AbortSignal.timeout(6000),
+        })
+        if (!r.ok) continue
+        const html = await r.text()
+
+        // Extract bio text
+        const bioMatch = html.match(/class="profile-bio"[^>]*>([\s\S]*?)<\/p>/i)
+        const bio = bioMatch ? bioMatch[1].replace(/<[^>]+>/g, '').trim() : ''
+
+        // Extract website from profile
+        const websiteMatch = html.match(/class="profile-website"[^>]*>[\s\S]*?href="([^"]+)"/i)
+        const website = websiteMatch ? websiteMatch[1] : ''
+
+        // Extract emails from bio
+        const emails = extractEmails(bio + ' ' + html)
+
+        return { emails, website, bio }
+      } catch {}
+    }
+    return { emails: [] }
+  } catch {
+    return { emails: [] }
+  }
 }
 
-function extractDomain(url: string): string | null {
+// ── GitHub profile email ────────────────────────────────────────────────────
+async function scrapeGitHub(org: string): Promise<{ emails: string[]; website?: string }> {
+  if (!org) return { emails: [] }
+  const headers: Record<string, string> = { Accept: 'application/vnd.github+json' }
+  if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
+
+  try {
+    // Check org profile
+    const orgR = await fetch(`https://api.github.com/orgs/${org}`, { headers, signal: AbortSignal.timeout(5000) })
+    if (orgR.ok) {
+      const data = await orgR.json()
+      const emails = extractEmails((data.email || '') + ' ' + (data.bio || '') + ' ' + (data.description || ''))
+      return { emails, website: data.blog || '' }
+    }
+    // Try as user
+    const userR = await fetch(`https://api.github.com/users/${org}`, { headers, signal: AbortSignal.timeout(5000) })
+    if (userR.ok) {
+      const data = await userR.json()
+      const emails: string[] = []
+      if (data.email) emails.push(data.email)
+      emails.push(...extractEmails((data.bio || '')))
+      return { emails, website: data.blog || '' }
+    }
+    return { emails: [] }
+  } catch {
+    return { emails: [] }
+  }
+}
+
+// ── Hunter.io lookup ────────────────────────────────────────────────────────
+async function hunterLookup(domain: string, contactName?: string): Promise<{ email?: string; confidence?: number; firstName?: string; lastName?: string; position?: string }> {
+  const apiKey = process.env.HUNTER_API_KEY
+  if (!apiKey || !domain) return {}
+
+  try {
+    // If we have a name, use email finder for precision
+    if (contactName) {
+      const parts = contactName.trim().split(/\s+/)
+      if (parts.length >= 2) {
+        const r = await fetch(`https://api.hunter.io/v2/email-finder?domain=${encodeURIComponent(domain)}&first_name=${encodeURIComponent(parts[0])}&last_name=${encodeURIComponent(parts.slice(1).join(' '))}&api_key=${apiKey}`)
+        if (r.ok) {
+          const d = await r.json()
+          if (d.data?.email && d.data.confidence > 40) {
+            return { email: d.data.email, confidence: d.data.confidence, firstName: d.data.first_name, lastName: d.data.last_name, position: d.data.position }
+          }
+        }
+      }
+    }
+
+    // Domain search — find best email
+    const r = await fetch(`https://api.hunter.io/v2/domain-search?domain=${encodeURIComponent(domain)}&limit=5&api_key=${apiKey}`)
+    if (!r.ok) return {}
+    const d = await r.json()
+    const emails = d.data?.emails || []
+
+    // Prioritize decision-makers
+    const priority = ['founder', 'ceo', 'cto', 'head', 'director', 'partner', 'managing', 'trader', 'portfolio']
+    const sorted = emails.sort((a: any, b: any) => {
+      const aScore = priority.some(p => (a.position || '').toLowerCase().includes(p)) ? 1 : 0
+      const bScore = priority.some(p => (b.position || '').toLowerCase().includes(p)) ? 1 : 0
+      return bScore - aScore || (b.confidence || 0) - (a.confidence || 0)
+    })
+
+    const best = sorted[0]
+    if (best?.value) {
+      return { email: best.value, confidence: best.confidence, firstName: best.first_name, lastName: best.last_name, position: best.position }
+    }
+    return {}
+  } catch {
+    return {}
+  }
+}
+
+// ── Extract domain from URL ─────────────────────────────────────────────────
+function getDomain(url: string): string {
+  if (!url) return ''
   try {
     const u = new URL(url.startsWith('http') ? url : `https://${url}`)
-    return u.hostname.replace(/^www\./, '')
-  } catch { return null }
+    return u.hostname.replace('www.', '')
+  } catch {
+    return ''
+  }
 }
 
-function parseName(fullName: string): { first: string; last: string } {
-  const parts = (fullName || '').trim().split(/\s+/)
-  return { first: parts[0] || '', last: parts.slice(1).join(' ') || '' }
-}
+// ── Main handler ────────────────────────────────────────────────────────────
+export async function POST(req: NextRequest) {
+  const { recordId, company, website, xHandle, githubOrg, contactName, linkedinUrl } = await req.json()
 
-// Priority roles we care about
-const PRIORITY_ROLES = [
-  'cto', 'co-founder', 'cofounder', 'founder', 'vp engineering',
-  'vp of engineering', 'head of engineering', 'engineering lead',
-  'ceo', 'chief technology', 'chief executive',
-]
-
-function scoreBio(bio: string): number {
-  if (!bio) return 0
-  const b = bio.toLowerCase()
-  return PRIORITY_ROLES.filter(r => b.includes(r)).length
-}
-
-// ── main enrichment logic ─────────────────────────────────────────────────────
-
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url)
-  const org = searchParams.get('org')
-  const website = searchParams.get('website') || ''
-
-  if (!org) return NextResponse.json({ ok: false, error: 'org required' }, { status: 400 })
-
-  const domain = extractDomain(website) || null
-  const contacts: any[] = []
+  const results: { source: string; email: string; confidence: string; name?: string; position?: string }[] = []
+  let foundWebsite = website || ''
 
   try {
-    // Step 1: Get org members (public)
-    const members = await ghGet(`/orgs/${org}/members?per_page=30`) || []
+    // 1. X bio scrape — extract email + website from their X profile
+    if (xHandle) {
+      const xResult = await scrapeXBio(xHandle)
+      if (xResult.website && !foundWebsite) foundWebsite = xResult.website
+      for (const email of xResult.emails) {
+        results.push({ source: 'x-bio', email, confidence: 'scraped' })
+      }
+    }
 
-    // Step 2: Enrich each member with their public profile
-    const enriched = await Promise.all(
-      members.slice(0, 20).map(async (m: any) => {
-        const profile = await ghGet(`/users/${m.login}`)
-        if (!profile) return null
+    // 2. Website scrape — find emails on their site
+    if (foundWebsite) {
+      const webResult = await scrapeWebsite(foundWebsite)
+      for (const email of webResult.emails) {
+        results.push({ source: 'website', email, confidence: 'scraped' })
+      }
+    }
 
-        const bioScore = scoreBio(profile.bio || '')
-        const { first, last } = parseName(profile.name || profile.login)
-        const profileEmail = profile.email || null
-
-        // Build email candidates
-        const candidates: { email: string; source: string; confidence: 'verified'|'inferred' }[] = []
-
-        if (profileEmail && profileEmail.includes('@')) {
-          candidates.push({ email: profileEmail, source: 'GitHub profile', confidence: 'verified' })
-        }
-
-        if (domain && first) {
-          const patterns = emailPatterns(first, last, domain)
-          patterns.forEach(p => candidates.push({
-            email: p.email,
-            source: `Pattern: ${p.pattern}`,
-            confidence: 'inferred',
-          }))
-        }
-
-        return {
-          login: m.login,
-          name: profile.name || m.login,
-          bio: profile.bio || '',
-          company: profile.company || '',
-          location: profile.location || '',
-          githubUrl: profile.html_url,
-          avatarUrl: profile.avatar_url,
-          followers: profile.followers || 0,
-          publicRepos: profile.public_repos || 0,
-          bioScore,
-          primaryEmail: candidates[0]?.email || null,
-          emailConfidence: candidates[0]?.confidence || null,
-          allCandidates: candidates.slice(0, 4),
-        }
-      })
-    )
-
-    const valid = enriched
-      .filter(Boolean)
-      .sort((a: any, b: any) => (b.bioScore - a.bioScore) || (b.followers - a.followers))
-
-    // Step 3: Fallback — try org's public email / repos contributors
-    if (valid.length === 0) {
-      const orgData = await ghGet(`/orgs/${org}`)
-      if (orgData?.email) {
-        contacts.push({
-          name: orgData.name || org,
-          bio: orgData.description || '',
-          primaryEmail: orgData.email,
-          emailConfidence: 'verified',
-          source: 'GitHub org profile',
-          githubUrl: `https://github.com/${org}`,
+    // 3. Hunter.io — professional email finder
+    const domain = getDomain(foundWebsite)
+    if (domain) {
+      const hunter = await hunterLookup(domain, contactName)
+      if (hunter.email) {
+        results.push({
+          source: 'hunter',
+          email: hunter.email,
+          confidence: `hunter-${hunter.confidence || 0}%`,
+          name: [hunter.firstName, hunter.lastName].filter(Boolean).join(' '),
+          position: hunter.position,
         })
       }
     }
 
-    // Step 4: Pick best contact — highest bio score, then follower count
-    const best = valid[0] || contacts[0] || null
+    // 4. GitHub profile email
+    if (githubOrg) {
+      const gh = await scrapeGitHub(githubOrg)
+      if (gh.website && !foundWebsite) foundWebsite = gh.website
+      for (const email of gh.emails) {
+        results.push({ source: 'github', email, confidence: 'public' })
+      }
+      // If we found a website from GitHub, run Hunter on it too
+      if (gh.website && !domain) {
+        const ghDomain = getDomain(gh.website)
+        if (ghDomain) {
+          const hunter = await hunterLookup(ghDomain, contactName)
+          if (hunter.email) {
+            results.push({ source: 'hunter-via-github', email: hunter.email, confidence: `hunter-${hunter.confidence || 0}%`, name: [hunter.firstName, hunter.lastName].filter(Boolean).join(' '), position: hunter.position })
+          }
+        }
+      }
+    }
+
+    // Dedupe results
+    const seen = new Set<string>()
+    const unique = results.filter(r => {
+      const key = r.email.toLowerCase()
+      if (seen.has(key)) return false
+      seen.add(key)
+      return true
+    })
+
+    // Pick best email (Hunter > website > X bio > GitHub)
+    const priorityOrder = ['hunter', 'hunter-via-github', 'website', 'x-bio', 'github']
+    unique.sort((a, b) => priorityOrder.indexOf(a.source) - priorityOrder.indexOf(b.source))
+    const best = unique[0]
+
+    // Update CRM if we found an email and have a recordId
+    if (best && recordId) {
+      const updateFields: Record<string, any> = {
+        'Contact Email': best.email,
+        'Email Confidence': best.source.startsWith('hunter') ? 'Hunter verified' : best.source === 'github' ? 'GitHub public' : 'Pattern inferred',
+      }
+      if (best.name && !contactName) updateFields['Contact Name'] = best.name
+      if (best.position) updateFields['Job Title'] = best.position
+      if (foundWebsite) updateFields['Website'] = foundWebsite
+
+      await fetch(`https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE}/${recordId}`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fields: updateFields, typecast: true }),
+      })
+    }
 
     return NextResponse.json({
       ok: true,
-      org,
-      domain,
-      contacts: valid.slice(0, 5),
-      best: best ? {
-        name: best.name,
-        bio: best.bio,
-        email: best.primaryEmail,
-        confidence: best.emailConfidence,
-        githubUrl: best.githubUrl,
-        title: best.bio?.split('\n')[0]?.slice(0, 80) || '',
-      } : null,
-      totalFound: valid.length,
+      found: !!best,
+      bestEmail: best?.email || null,
+      bestSource: best?.source || null,
+      bestConfidence: best?.confidence || null,
+      contactName: best?.name || contactName || null,
+      position: best?.position || null,
+      website: foundWebsite || null,
+      allResults: unique,
+      totalFound: unique.length,
     })
   } catch (e: any) {
     return NextResponse.json({ ok: false, error: e.message }, { status: 500 })
