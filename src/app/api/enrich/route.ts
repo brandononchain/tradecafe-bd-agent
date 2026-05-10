@@ -47,37 +47,46 @@ async function scrapeWebsite(url: string): Promise<{ emails: string[]; error?: s
 // ── X/Twitter bio scrape ────────────────────────────────────────────────────
 async function scrapeXBio(handle: string): Promise<{ emails: string[]; website?: string; bio?: string }> {
   if (!handle) return { emails: [] }
-  const clean = handle.replace('@', '').replace('https://x.com/', '').replace('https://twitter.com/', '')
+  const clean = handle.replace('@', '').replace('https://x.com/', '').replace('https://twitter.com/', '').split('/')[0].split('?')[0]
+  if (!clean) return { emails: [] }
+
   try {
-    // Use nitter instances or public profile page
-    const urls = [
-      `https://nitter.net/${clean}`,
-      `https://nitter.privacydev.net/${clean}`,
-    ]
-    for (const url of urls) {
-      try {
-        const r = await fetch(url, {
-          headers: { 'User-Agent': 'Mozilla/5.0 (compatible; TradeCafeBD/1.0)' },
-          signal: AbortSignal.timeout(6000),
-        })
-        if (!r.ok) continue
-        const html = await r.text()
+    // Use X syndication API — free, no auth, returns profile + tweets with user data
+    const url = `https://syndication.twitter.com/srv/timeline-profile/screen-name/${clean}`
+    const r = await fetch(url, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' },
+      signal: AbortSignal.timeout(10000),
+    })
+    if (!r.ok) return { emails: [] }
+    const html = await r.text()
 
-        // Extract bio text
-        const bioMatch = html.match(/class="profile-bio"[^>]*>([\s\S]*?)<\/p>/i)
-        const bio = bioMatch ? bioMatch[1].replace(/<[^>]+>/g, '').trim() : ''
+    // Extract __NEXT_DATA__ JSON which contains the full user profile
+    const dataMatch = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/)
+    if (!dataMatch) return { emails: [] }
 
-        // Extract website from profile
-        const websiteMatch = html.match(/class="profile-website"[^>]*>[\s\S]*?href="([^"]+)"/i)
-        const website = websiteMatch ? websiteMatch[1] : ''
+    const data = JSON.parse(dataMatch[1])
+    const entries = data?.props?.pageProps?.timeline?.entries || []
+    
+    // Get user info from first tweet entry
+    const firstTweet = entries.find((e: any) => e.type === 'tweet')
+    const user = firstTweet?.content?.tweet?.user
+    
+    if (!user) return { emails: [] }
 
-        // Extract emails from bio
-        const emails = extractEmails(bio + ' ' + html)
-
-        return { emails, website, bio }
-      } catch {}
+    const bio = user.description || ''
+    const allText = bio + ' ' + (user.location || '')
+    
+    // Extract website from user entities
+    let website = ''
+    const urlEntity = user.entities?.url?.urls?.[0]
+    if (urlEntity?.expanded_url) {
+      website = urlEntity.expanded_url
     }
-    return { emails: [] }
+
+    // Extract emails from bio text
+    const emails = extractEmails(allText)
+
+    return { emails, website, bio }
   } catch {
     return { emails: [] }
   }
