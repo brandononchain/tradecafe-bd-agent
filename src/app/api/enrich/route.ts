@@ -207,29 +207,65 @@ export async function POST(req: NextRequest) {
 
   const results: { source: string; email: string; confidence: string; name?: string; position?: string }[] = []
   let foundWebsite = website || ''
+  let foundName = contactName || ''
 
   try {
+    // Derive X handle from company name if not provided (most KOLs = their X name)
+    const effectiveXHandle = xHandle || company?.replace(/\s+/g, '') || ''
+
     // 1. X bio scrape — extract email + website from their X profile
-    if (xHandle) {
-      const xResult = await scrapeXBio(xHandle)
+    if (effectiveXHandle) {
+      const xResult = await scrapeXBio(effectiveXHandle)
       if (xResult.website && !foundWebsite) foundWebsite = xResult.website
       for (const email of xResult.emails) {
         results.push({ source: 'x-bio', email, confidence: 'scraped' })
       }
     }
 
-    // 2. Website scrape — find emails on their site
+    // 2. Website scrape — find emails on their site (including linktree, etc.)
     if (foundWebsite) {
       const webResult = await scrapeWebsite(foundWebsite)
       for (const email of webResult.emails) {
         results.push({ source: 'website', email, confidence: 'scraped' })
       }
+      
+      // If the website is a linktree/link-in-bio, scrape it for actual website links
+      const isLinkTree = /linktr\.ee|linkin\.bio|beacons\.ai|bio\.link|stan\.store|whop\.com|carrd\.co/i.test(foundWebsite)
+      if (isLinkTree) {
+        try {
+          const ltRes = await fetch(foundWebsite, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36' },
+            signal: AbortSignal.timeout(8000),
+            redirect: 'follow',
+          })
+          if (ltRes.ok) {
+            const ltHtml = await ltRes.text()
+            // Extract all URLs from the linktree page
+            const urlMatches = ltHtml.match(/https?:\/\/[a-zA-Z0-9._\-]+\.[a-zA-Z]{2,}[^\s"'<>)}\]]*?/g) || []
+            // Find emails on linktree page
+            const ltEmails = extractEmails(ltHtml)
+            for (const email of ltEmails) {
+              results.push({ source: 'linktree', email, confidence: 'scraped' })
+            }
+            // Look for personal/business websites (not social media)
+            const socialDomains = /twitter\.com|x\.com|instagram\.com|facebook\.com|youtube\.com|tiktok\.com|discord\.gg|t\.me|linktr\.ee|whop\.com|beacons|carrd/i
+            const realSites = urlMatches.filter(u => !socialDomains.test(u))
+            for (const site of realSites.slice(0, 3)) {
+              const siteResult = await scrapeWebsite(site)
+              for (const email of siteResult.emails) {
+                results.push({ source: 'website-via-linktree', email, confidence: 'scraped' })
+              }
+            }
+          }
+        } catch {}
+      }
     }
 
     // 3. Apollo.io — people enrichment (275M+ contacts, free tier: 10K/mo)
+    // Try with as much info as we have — Apollo can match on name alone
     const domain = getDomain(foundWebsite)
     const apollo = await apolloLookup({
-      name: contactName,
+      name: foundName || company,
       domain: domain || undefined,
       linkedinUrl: linkedinUrl || undefined,
       organizationName: company || undefined,
@@ -272,26 +308,29 @@ export async function POST(req: NextRequest) {
       return true
     })
 
-    // Pick best email (Apollo > website > X bio > GitHub)
-    const priorityOrder = ['apollo', 'apollo-via-github', 'website', 'x-bio', 'github']
+    // Pick best email (Apollo > linktree > website > X bio > GitHub)
+    const priorityOrder = ['apollo', 'apollo-via-github', 'linktree', 'website-via-linktree', 'website', 'x-bio', 'github']
     unique.sort((a, b) => priorityOrder.indexOf(a.source) - priorityOrder.indexOf(b.source))
     const best = unique[0]
 
-    // Update CRM if we found an email and have a recordId
-    if (best && recordId) {
-      const updateFields: Record<string, any> = {
-        'Contact Email': best.email,
-        'Email Confidence': best.source.startsWith('apollo') ? 'Apollo verified' : best.source === 'github' ? 'GitHub public' : 'Pattern inferred',
+    // Update CRM — save email if found, and always save website/name if we discovered them
+    if (recordId) {
+      const updateFields: Record<string, any> = {}
+      if (best) {
+        updateFields['Contact Email'] = best.email
+        updateFields['Email Confidence'] = best.source.startsWith('apollo') ? 'Apollo verified' : best.source === 'github' ? 'GitHub public' : `Scraped (${best.source})`
       }
-      if (best.name && !contactName) updateFields['Contact Name'] = best.name
-      if (best.position) updateFields['Job Title'] = best.position
-      if (foundWebsite) updateFields['Website'] = foundWebsite
+      if (best?.name && !contactName) updateFields['Contact Name'] = best.name
+      if (best?.position) updateFields['Job Title'] = best.position
+      if (foundWebsite && !website) updateFields['Website'] = foundWebsite
 
-      await fetch(`https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE}/${recordId}`, {
-        method: 'PATCH',
-        headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fields: updateFields, typecast: true }),
-      })
+      if (Object.keys(updateFields).length > 0) {
+        await fetch(`https://api.airtable.com/v0/${AT_BASE}/${AT_TABLE}/${recordId}`, {
+          method: 'PATCH',
+          headers: { Authorization: `Bearer ${process.env.AIRTABLE_API_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ fields: updateFields, typecast: true }),
+        })
+      }
     }
 
     return NextResponse.json({
