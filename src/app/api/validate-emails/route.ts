@@ -72,48 +72,45 @@ async function checkEmail(
   return { status: 'ready', reason: 'Ready to send', willSend: true }
 }
 
-// Try to find a better email via Hunter.io when one is missing or invalid
-async function hunterLookup(domain: string): Promise<string | null> {
-  if (!process.env.HUNTER_API_KEY || !domain) return null
+// Try to find a better email via Apollo.io when one is missing or invalid
+async function apolloFallback(name: string, domain: string): Promise<string | null> {
+  if (!process.env.APOLLO_API_KEY || !domain) return null
   try {
-    const r = await fetch(
-      `https://api.hunter.io/v2/domain-search?domain=${encodeURIComponent(domain)}&limit=3&api_key=${process.env.HUNTER_API_KEY}`,
-      { signal: AbortSignal.timeout(5000) }
-    )
+    const params: Record<string, string> = { domain, reveal_personal_emails: 'true' }
+    if (name) {
+      const parts = name.trim().split(/\s+/)
+      if (parts.length >= 2) { params.first_name = parts[0]; params.last_name = parts.slice(1).join(' ') }
+    }
+    const qs = new URLSearchParams(params).toString()
+    const r = await fetch(`https://api.apollo.io/api/v1/people/match?${qs}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': process.env.APOLLO_API_KEY },
+      signal: AbortSignal.timeout(8000),
+    })
     if (!r.ok) return null
-    const d = await r.json()
-    const emails = (d?.data?.emails || [])
-      .filter((e: any) => e.value && e.confidence > 50)
-      .map((e: any) => {
-        let score = e.confidence
-        const pos = (e.position || '').toLowerCase()
-        if (/cto|ceo|founder|vp|head|chief/.test(pos)) score += 30
-        if (e.type === 'personal') score += 10
-        return { ...e, score }
-      })
-      .sort((a: any, b: any) => b.score - a.score)
-    return emails[0]?.value || null
+    const data = await r.json()
+    return data.person?.email || data.person?.personal_emails?.[0] || null
   } catch { return null }
 }
 
 export async function POST(req: NextRequest) {
-  const { leads, verifyMX = true, tryHunter = true } = await req.json()
+  const { leads, verifyMX = true, tryApollo = true } = await req.json()
   if (!Array.isArray(leads))
     return NextResponse.json({ ok: false, error: 'leads array required' }, { status: 400 })
 
   const results = await Promise.all(leads.map(async (lead: any) => {
-    let email     = lead.contactEmail || ''
-    let hunterEmail: string | null = null
-    let hunterUsed = false
+    let email = lead.contactEmail || ''
+    let apolloEmail: string | null = null
+    let apolloUsed = false
 
-    // If missing or invalid, try Hunter.io
-    if (tryHunter && (!email || !email.includes('@'))) {
+    // If missing or invalid, try Apollo.io
+    if (tryApollo && (!email || !email.includes('@'))) {
       const website = lead.website || ''
       let domain: string | null = null
       try { domain = new URL(website.startsWith('http') ? website : `https://${website}`).hostname.replace(/^www\./, '') } catch {}
       if (domain) {
-        hunterEmail = await hunterLookup(domain)
-        if (hunterEmail) { email = hunterEmail; hunterUsed = true }
+        apolloEmail = await apolloFallback(lead.contactName || '', domain)
+        if (apolloEmail) { email = apolloEmail; apolloUsed = true }
       }
     }
 
@@ -124,8 +121,8 @@ export async function POST(req: NextRequest) {
       company:     lead.company,
       email:       email || null,
       originalEmail: lead.contactEmail || null,
-      hunterEmail: hunterUsed ? hunterEmail : null,
-      hunterUsed,
+      apolloEmail: apolloUsed ? apolloEmail : null,
+      apolloUsed,
       ...check,
     }
   }))
@@ -139,7 +136,7 @@ export async function POST(req: NextRequest) {
     missing:   results.filter(r => r.status === 'missing').length,
     no_mx:     results.filter(r => r.status === 'no_mx').length,
     invalid:   results.filter(r => r.status === 'invalid').length,
-    hunterFound: results.filter(r => r.hunterUsed).length,
+    apolloFound: results.filter(r => r.apolloUsed).length,
     willSend:  results.filter(r => r.willSend).length,
     blocked:   results.filter(r => !r.willSend).length,
   }

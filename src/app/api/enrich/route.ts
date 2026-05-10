@@ -112,45 +112,70 @@ async function scrapeGitHub(org: string): Promise<{ emails: string[]; website?: 
   }
 }
 
-// ── Hunter.io lookup ────────────────────────────────────────────────────────
-async function hunterLookup(domain: string, contactName?: string): Promise<{ email?: string; confidence?: number; firstName?: string; lastName?: string; position?: string }> {
-  const apiKey = process.env.HUNTER_API_KEY
-  if (!apiKey || !domain) return {}
+// ── Apollo.io people enrichment ─────────────────────────────────────────────
+async function apolloLookup(opts: {
+  name?: string; domain?: string; email?: string; linkedinUrl?: string; organizationName?: string
+}): Promise<{ email?: string; firstName?: string; lastName?: string; position?: string; linkedinUrl?: string; phone?: string }> {
+  const apiKey = process.env.APOLLO_API_KEY
+  if (!apiKey) return {}
 
   try {
-    // If we have a name, use email finder for precision
-    if (contactName) {
-      const parts = contactName.trim().split(/\s+/)
+    // Build query params — Apollo matches better with more data
+    const params: Record<string, string> = {
+      reveal_personal_emails: 'true',
+    }
+
+    if (opts.email) params.email = opts.email
+    if (opts.linkedinUrl) params.linkedin_url = opts.linkedinUrl
+    if (opts.domain) params.domain = opts.domain
+    if (opts.organizationName) params.organization_name = opts.organizationName
+
+    if (opts.name) {
+      const parts = opts.name.trim().split(/\s+/)
       if (parts.length >= 2) {
-        const r = await fetch(`https://api.hunter.io/v2/email-finder?domain=${encodeURIComponent(domain)}&first_name=${encodeURIComponent(parts[0])}&last_name=${encodeURIComponent(parts.slice(1).join(' '))}&api_key=${apiKey}`)
-        if (r.ok) {
-          const d = await r.json()
-          if (d.data?.email && d.data.confidence > 40) {
-            return { email: d.data.email, confidence: d.data.confidence, firstName: d.data.first_name, lastName: d.data.last_name, position: d.data.position }
-          }
-        }
+        params.first_name = parts[0]
+        params.last_name = parts.slice(1).join(' ')
+      } else {
+        params.name = opts.name
       }
     }
 
-    // Domain search — find best email
-    const r = await fetch(`https://api.hunter.io/v2/domain-search?domain=${encodeURIComponent(domain)}&limit=5&api_key=${apiKey}`)
-    if (!r.ok) return {}
-    const d = await r.json()
-    const emails = d.data?.emails || []
+    // Need at least one identifying field
+    if (!params.email && !params.linkedin_url && !params.domain && !params.first_name) return {}
 
-    // Prioritize decision-makers
-    const priority = ['founder', 'ceo', 'cto', 'head', 'director', 'partner', 'managing', 'trader', 'portfolio']
-    const sorted = emails.sort((a: any, b: any) => {
-      const aScore = priority.some(p => (a.position || '').toLowerCase().includes(p)) ? 1 : 0
-      const bScore = priority.some(p => (b.position || '').toLowerCase().includes(p)) ? 1 : 0
-      return bScore - aScore || (b.confidence || 0) - (a.confidence || 0)
+    const qs = new URLSearchParams(params).toString()
+    const r = await fetch(`https://api.apollo.io/api/v1/people/match?${qs}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache',
+        'x-api-key': apiKey,
+      },
+      signal: AbortSignal.timeout(10000),
     })
 
-    const best = sorted[0]
-    if (best?.value) {
-      return { email: best.value, confidence: best.confidence, firstName: best.first_name, lastName: best.last_name, position: best.position }
+    if (!r.ok) return {}
+    const data = await r.json()
+    const person = data.person
+
+    if (!person) return {}
+
+    // Extract best email — prefer work email, fall back to personal
+    let bestEmail = ''
+    if (person.email) {
+      bestEmail = person.email
+    } else if (person.personal_emails?.length) {
+      bestEmail = person.personal_emails[0]
     }
-    return {}
+
+    return {
+      email: bestEmail || undefined,
+      firstName: person.first_name || undefined,
+      lastName: person.last_name || undefined,
+      position: person.title || undefined,
+      linkedinUrl: person.linkedin_url || undefined,
+      phone: person.phone_numbers?.[0]?.sanitized_number || undefined,
+    }
   } catch {
     return {}
   }
@@ -192,19 +217,22 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // 3. Hunter.io — professional email finder
+    // 3. Apollo.io — people enrichment (275M+ contacts, free tier: 10K/mo)
     const domain = getDomain(foundWebsite)
-    if (domain) {
-      const hunter = await hunterLookup(domain, contactName)
-      if (hunter.email) {
-        results.push({
-          source: 'hunter',
-          email: hunter.email,
-          confidence: `hunter-${hunter.confidence || 0}%`,
-          name: [hunter.firstName, hunter.lastName].filter(Boolean).join(' '),
-          position: hunter.position,
-        })
-      }
+    const apollo = await apolloLookup({
+      name: contactName,
+      domain: domain || undefined,
+      linkedinUrl: linkedinUrl || undefined,
+      organizationName: company || undefined,
+    })
+    if (apollo.email) {
+      results.push({
+        source: 'apollo',
+        email: apollo.email,
+        confidence: 'apollo-verified',
+        name: [apollo.firstName, apollo.lastName].filter(Boolean).join(' '),
+        position: apollo.position,
+      })
     }
 
     // 4. GitHub profile email
@@ -214,13 +242,13 @@ export async function POST(req: NextRequest) {
       for (const email of gh.emails) {
         results.push({ source: 'github', email, confidence: 'public' })
       }
-      // If we found a website from GitHub, run Hunter on it too
+      // If we found a website from GitHub and Apollo didn't have it, try Apollo with that domain
       if (gh.website && !domain) {
         const ghDomain = getDomain(gh.website)
         if (ghDomain) {
-          const hunter = await hunterLookup(ghDomain, contactName)
-          if (hunter.email) {
-            results.push({ source: 'hunter-via-github', email: hunter.email, confidence: `hunter-${hunter.confidence || 0}%`, name: [hunter.firstName, hunter.lastName].filter(Boolean).join(' '), position: hunter.position })
+          const apolloGh = await apolloLookup({ name: contactName, domain: ghDomain })
+          if (apolloGh.email) {
+            results.push({ source: 'apollo-via-github', email: apolloGh.email, confidence: 'apollo-verified', name: [apolloGh.firstName, apolloGh.lastName].filter(Boolean).join(' '), position: apolloGh.position })
           }
         }
       }
@@ -235,8 +263,8 @@ export async function POST(req: NextRequest) {
       return true
     })
 
-    // Pick best email (Hunter > website > X bio > GitHub)
-    const priorityOrder = ['hunter', 'hunter-via-github', 'website', 'x-bio', 'github']
+    // Pick best email (Apollo > website > X bio > GitHub)
+    const priorityOrder = ['apollo', 'apollo-via-github', 'website', 'x-bio', 'github']
     unique.sort((a, b) => priorityOrder.indexOf(a.source) - priorityOrder.indexOf(b.source))
     const best = unique[0]
 
@@ -244,7 +272,7 @@ export async function POST(req: NextRequest) {
     if (best && recordId) {
       const updateFields: Record<string, any> = {
         'Contact Email': best.email,
-        'Email Confidence': best.source.startsWith('hunter') ? 'Hunter verified' : best.source === 'github' ? 'GitHub public' : 'Pattern inferred',
+        'Email Confidence': best.source.startsWith('apollo') ? 'Apollo verified' : best.source === 'github' ? 'GitHub public' : 'Pattern inferred',
       }
       if (best.name && !contactName) updateFields['Contact Name'] = best.name
       if (best.position) updateFields['Job Title'] = best.position

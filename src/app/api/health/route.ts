@@ -17,7 +17,7 @@ export async function GET() {
     smtpEmail:      !!process.env.SMTP_EMAIL,
     smtpEmailVal:   process.env.SMTP_EMAIL || null,
     githubToken:    !!process.env.GITHUB_TOKEN,
-    hunterKey:      !!process.env.HUNTER_API_KEY,
+    apolloKey:      !!process.env.APOLLO_API_KEY,
     discordWebhook: !!process.env.DISCORD_WEBHOOK_URL,
   }
 
