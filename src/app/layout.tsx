@@ -1,14 +1,14 @@
 import type { Metadata } from 'next'
 export const metadata: Metadata = {
   title: 'TradeCafe BD Agent',
-  description: 'B2B Cold Email System — tradecafe.ai',
+  description: 'KOL Discovery & Partner Outreach — tradecafe.ai',
   icons: {
     icon: [
-      { url: '/favicon.svg', type: 'image/svg+xml' },
       { url: '/favicon.ico', sizes: 'any' },
       { url: '/icon-32.png', type: 'image/png', sizes: '32x32' },
+      { url: '/icon-192.png', type: 'image/png', sizes: '192x192' },
     ],
-    apple: [{ url: '/icon-192.png', sizes: '192x192' }],
+    apple: [{ url: '/apple-touch-icon.png', sizes: '180x180' }],
   },
 }
 export default function RootLayout({ children }: { children: React.ReactNode }) {

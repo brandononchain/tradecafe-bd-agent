@@ -391,7 +391,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-
 .app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 .top { display: flex; align-items: center; justify-content: space-between; padding: 10px 20px; border-bottom: 1px solid var(--b); background: var(--s1); }
 .logo { display: flex; align-items: center; gap: 8px; }
-.logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--acc); box-shadow: 0 0 12px var(--acc); }
+.logo-img { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; }
 .logo-t { font-family: var(--mono); font-size: 14px; font-weight: 700; letter-spacing: 1px; }
 .logo-tag { font-family: var(--mono); font-size: 9px; font-weight: 700; letter-spacing: 1.5px; padding: 2px 8px; border-radius: 3px; background: var(--acc); color: var(--bg); text-transform: uppercase; }
 
@@ -481,7 +481,7 @@ body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-
       {/* TOP BAR */}
       <div className="top">
         <div className="logo">
-          <div className="logo-dot" />
+          <img src="/tradecafe-logo.jpg" alt="TradeCafe" className="logo-img" />
           <span className="logo-t">TRADECAFE</span>
           <span className="logo-tag">BD Agent</span>
         </div>
